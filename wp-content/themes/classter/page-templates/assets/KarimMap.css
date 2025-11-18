@@ -1,0 +1,159 @@
+/* optional but better */
+
+header.menu_center .topWrap .wrap_menu {
+    display: flex;
+    justify-content: space-between;
+}
+
+
+/* /optional */
+
+#application-state-wrap {
+    padding: 20px !important;
+}
+
+#application-details .details {
+    color: #949494;
+}
+
+.form-input-wrap .inner input[type="date"] {
+    text-align: end;
+}
+
+
+/* application-search */
+
+#application-search {
+    display: grid;
+    gap: 30px;
+    grid-template: 35px/300px 1fr;
+    margin: 30px 0;
+}
+
+#application-search .input-wrap {
+    width: 100%;
+    background-color: #EDEDED;
+    border-radius: 50px;
+    overflow: hidden;
+    display: flex;
+    height: 100%;
+}
+
+#app-search-in {
+    border: none;
+    background: none;
+    padding: 5px 15px;
+}
+
+#app-search-btn {
+    background-color: #BBBBBB;
+    color: #fff;
+    border-radius: 50px;
+    width: 103px;
+    border: none;
+    transition: background-color .3s ease;
+    margin-right: auto;
+}
+
+#app-search-btn:hover {
+    background-color: #999;
+}
+
+#application-search input,
+#application-search button {
+    font-family: "Cairo", sans-serif !important;
+}
+
+
+/* progress bar */
+
+#app-status-progress {
+    display: flex;
+    width: 100%;
+    background-color: #EDEDED;
+    border-radius: 50px;
+    overflow: hidden;
+    position: relative;
+}
+
+#app-status-progress::before {
+    content: "";
+    display: block;
+    height: 35px;
+    width: 100%;
+    background: linear-gradient(to left, #00000000 0%, #00000000 var(--value), #EDEDED var(--value)), linear-gradient(242deg, transparent 33%, rgba(255, 255, 255, .15) 33%, rgba(255, 255, 255, .15) 66%, transparent 66%), linear-gradient(to left, #14d086, #c4ff77);
+    border-radius: 2px;
+    background-size: 100% 100%, 35px 100%, 100% 100%, 100% 100%;
+}
+
+#app-status-progress::after {
+    content: attr(data-value);
+    position: absolute;
+    right: var(--value);
+    top: 50%;
+    transform: translate(-15px, -50%);
+    font-weight: 500;
+}
+
+
+/* progress steps */
+
+.progress-step {
+    background-color: #F4F7F9;
+    padding: 15px;
+    margin-bottom: 30px;
+    border-radius: 7px;
+    display: grid;
+    grid-template: auto/1fr auto;
+    grid-template-areas: "name icon""desc icon";
+    gap: 0 30px;
+}
+
+.progress-step .fa-check {
+    color: #70E791;
+}
+
+.progress-step .fa-clock {
+    color: #E7B400;
+}
+
+#application-progress-steps .chief-name {
+    font-size: 16px;
+    padding: 0;
+    grid-area: name;
+}
+
+#application-progress-steps .desc {
+    text-align: right;
+    color: #949494;
+    grid-area: desc;
+}
+
+#application-progress-steps i {
+    display: flex;
+    width: 2em;
+    height: 2em;
+    border: 1px solid #CDCDCD;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    grid-area: icon;
+    align-self: center;
+    box-sizing: border-box;
+    font-size: 20px;
+}
+
+.fa {
+    font-family: "FontAwesome"
+}
+
+html[lang="ar"] .terms-form [class^="vc_col"] {
+    float: right;
+}
+
+@media (max-width: 767px) {
+    #application-search {
+        gap: 30px;
+        grid-template: 35px 35px/1fr;
+    }
+}

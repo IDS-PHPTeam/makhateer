@@ -1,0 +1,433 @@
+.formItems .formList li .sendEnter,
+.formItems .formList .loginSoc .iconLogin,
+.relatedPostWrap.sc_blogger article .readmore_blogger,
+.revlink,
+.openResponsiveMenu {
+    -webkit-border-radius: 31px;
+    -moz-border-radius: 31px;
+    border-radius: 31px;
+}
+
+.sc_tabs {
+    margin: 0;
+}
+
+.mfp-close {
+    display: none;
+}
+
+ul.loginHeadTab {
+    height: 75px;
+    padding: 0;
+    margin: 0;
+}
+
+ul.loginHeadTab:after {
+    content: '';
+    height: 0;
+    display: block;
+    clear: both;
+}
+
+ul.loginHeadTab li {
+    list-style: none;
+    display: block;
+    background-color: #f5f7f9;
+    width: 50%;
+    float: left;
+    white-space: nowrap;
+}
+
+ul.loginHeadTab li a {
+    display: block;
+    height: 74px;
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: #dcdfe0;
+    color: #a2a7b4;
+    font-size: 23px;
+    text-align: center;
+    line-height: 74px;
+    font-weight: 300;
+    overflow: hidden;
+}
+
+ul.loginHeadTab li a:before {
+    font-family: "fontello";
+    display: inline-block;
+    padding: 0 10px 0 0;
+    font-size: 14px;
+    line-height: 14px;
+}
+
+ul.loginHeadTab li a.loginFormTab:before {
+    content: '\e872';
+}
+
+ul.loginHeadTab li a.registerFormTab:before {
+    content: '\e873';
+}
+
+ul.loginHeadTab li+li a {
+    border-width: 0 0 1px 1px;
+    border-style: solid;
+    border-color: #ddd;
+}
+
+ul.loginHeadTab li.ui-tabs-active {
+    background-color: #fff;
+    position: relative;
+}
+
+ul.loginHeadTab li.ui-tabs-active:before {
+    content: '';
+    height: 4px;
+    display: block;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0;
+    z-index: 1050;
+}
+
+ul.loginHeadTab li+li.ui-tabs-active:before {
+    left: 0;
+    padding: 0 1px 0 0;
+}
+
+ul.loginHeadTab li.ui-tabs-active a {
+    border-bottom-color: #fff;
+    color: #000000;
+}
+
+.formItems {
+    padding: 0 40px;
+}
+
+.formItems form {
+    max-width: 600px;
+    padding: 0;
+    margin: auto;
+    position: relative;
+}
+
+.formItems:after {
+    content: '';
+    height: 0;
+    display: block;
+    clear: both;
+}
+
+.formItems .itemformRight {
+    float: left;
+    width: 50%;
+    padding: 40px 0;
+}
+
+.formItems .itemformLeft {
+    float: left;
+    width: 50%;
+    padding: 40px 0;
+}
+
+.formItems.loginFormBody {
+    margin: 0;
+}
+
+.formItems.loginFormBody .itemformLeft {
+    border-right: 1px solid #dcdfe0;
+}
+
+.formItems.loginFormBody .itemformLeft ul {
+    padding: 0 40px 0 0;
+}
+
+.formItems.loginFormBody .itemformRight {
+    margin: 0 -1px 0 0;
+}
+
+.formItems.loginFormBody .itemformRight ul {
+    padding: 0 0 0 40px;
+}
+
+.formItems.registerFormBody .itemformLeft ul {
+    padding: 0 15px 0 0;
+}
+
+.formItems.registerFormBody .itemformRight ul {
+    padding: 0 0 0 15px;
+}
+
+.formItems.loginFormBody .remember {
+    color: #99a2ac;
+    font-size: 12px;
+    height: 15px;
+    line-height: 15px;
+    padding: 30px 0;
+}
+
+.formItems.loginFormBody .remember #rememberme {
+    float: left;
+    vertical-align: middle;
+    margin: 0 5px 0 0;
+    padding: 0;
+}
+
+.formItems.loginFormBody .remember label {
+    text-transform: none;
+    text-transform: none;
+    color: inherit;
+    font-weight: 300;
+    float: left;
+    vertical-align: middle;
+}
+
+.formItems.loginFormBody .remember .forgotPwd {
+    float: right;
+}
+
+.formItems.loginFormBody .remember .forgotPwd:hover {}
+
+.formItems.registerFormBody .i-agree {
+    color: #99a2ac;
+    font-size: 12px;
+    height: 15px;
+    line-height: 15px;
+    padding: 30px 0;
+}
+
+.formItems.registerFormBody .i-agree #i-agree {
+    float: left;
+    vertical-align: middle;
+    margin: 0 5px 0 0;
+    padding: 0;
+}
+
+.formItems.registerFormBody .i-agree label {
+    float: left;
+    vertical-align: middle;
+    color: inherit;
+    font-weight: 300;
+    text-transform: none;
+}
+
+.formItems.registerFormBody .i-agree a {
+    display: inline-block;
+    margin: 0 0 0 5px;
+}
+
+.formItems.registerFormBody .i-agree a:hover {}
+
+.formItems.loginFormBody .itemformRight {
+    font-size: 12px;
+}
+
+.formItems.registerFormBody .itemformRight .formDescription {
+    font-size: 10px;
+    padding-left: 20px;
+}
+
+.formItems .formList .loginSoc {
+    padding: 0;
+    height: 32px;
+}
+
+.formItems .formList .wp-social-login-provider-list {
+    padding-left: 0;
+}
+
+.formItems .formList .loginSoc.login_plugin {
+    height: auto;
+}
+
+.formItems .formList .loginSoc .iconLogin {
+    width: 40px;
+    height: 40px;
+    display: block;
+    float: left;
+}
+
+.formItems .formList .loginSoc .iconLogin+.iconLogin {
+    margin: 0 0 0 5px;
+}
+
+.formItems .formList .loginSoc .iconLogin.fb {
+    background-color: #3b5998;
+    color: #fff;
+}
+
+.formItems .formList .loginSoc .iconLogin.tw {
+    background-color: #00acee;
+    color: #fff;
+}
+
+.formItems .formList .loginSoc .iconLogin.gg {
+    background-color: #dd4b39;
+    color: #fff;
+}
+
+.formItems .formList .loginSoc .iconLogin:before {
+    font-size: 14px;
+    font-family: "fontello";
+    width: 40px;
+    height: 40px;
+    display: block;
+    line-height: 40px;
+    text-align: center;
+}
+
+.formItems .formList .loginSoc .iconLogin.fb:before {
+    content: '\e823';
+}
+
+.formItems .formList .loginSoc .iconLogin.tw:before {
+    content: '\e822';
+}
+
+.formItems .formList .loginSoc .iconLogin.gg:before {
+    content: '\e81e';
+}
+
+.formItems .formList {
+    margin: 0;
+    padding: 0;
+}
+
+.formItems .formList li {
+    list-style: none;
+    display: block;
+}
+
+.formList li:last-child {
+    padding-bottom: 12px;
+}
+
+.formItems .formList li input[type="text"],
+.formItems .formList li input[type="password"] {
+    width: 100%;
+    margin: 0 0 5px 0;
+    padding: 0 40px 0 15px
+}
+
+.formItems .formList li.icon {
+    overflow: hidden;
+    position: relative;
+}
+
+.formItems .formList li.icon:before {
+    color: #dcdfe0;
+    width: 36px;
+    height: 26px;
+    position: absolute;
+    top: 50%;
+    margin: -14px 0 0 0;
+    right: 5px;
+    display: block;
+    z-index: 1;
+    line-height: 26px;
+    text-align: center;
+    font-family: "fontello";
+    border-left: 1px solid #dcdfe0;
+    opacity: 1;
+}
+
+.formItems .formList li input[type="text"],
+.formItems .formList li input[type="password"],
+.formItems .formList li.icon:before,
+.formItems .formList li .sendEnter {
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -ms-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+}
+
+.formItems .formList li input:focus {
+    color: #1a1d1f;
+}
+
+.formItems .formList li.icon.iconFocus:before {
+    width: 0;
+    right: -5px;
+    content: '';
+}
+
+.formItems .formList li.icon.formLogin:before {
+    content: '\32';
+}
+
+.formItems .formList li.icon.formUser:before {
+    content: '\e86f';
+}
+
+.formItems .formList li.icon.formPass:before {
+    content: '\e876';
+}
+
+.formItems .formList li .sendEnter {
+    font-size: 14px;
+    height: 50px;
+    line-height: 50px;
+    padding: 0 30px;
+    padding-bottom: 12px !important;
+    text-transform: uppercase;
+    display: block;
+    text-decoration: none;
+    background-color: #c42632;
+    width: 65%;
+    margin: auto;
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 300;
+    text-align: center;
+}
+
+.formItems .formList li .sendEnter:hover {
+    background-color: #323232;
+    color: #fff;
+    border-color: #323232;
+}
+
+.formItems .result p {
+    padding: 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.ids-form-body {
+    order: 2;
+}
+
+.result.sc_infobox {
+    order: 1;
+}
+
+#loginForm .result {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 195px;
+    height: 45px;
+    z-index: 3000;
+    display: none;
+    margin-bottom: 13px !important;
+}
+
+#registerForm .result {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 485px;
+    height: 45px;
+    z-index: 3000;
+    display: none;
+}
+
+a,
+p {
+    letter-spacing: normal !important;
+}

@@ -1,0 +1,35 @@
+#topOfPage,
+header,
+.footerContentWrap,
+#wpadminbar {
+    display: none !important;
+}
+
+html,
+.mapSection,
+.post_text_area {
+    margin-top: 0px !important;
+}
+
+.vc_custom_1616995289386,
+.page-id-2470 section {
+    margin: 0px !important;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    margin-right: 0px !important;
+    margin-left: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+
+.page-id-2473,
+.page-id-6088 {
+    margin-top: -50px !important;
+}
+
+.page-id-2471,
+.page-id-6086 {
+    margin-top: 0px !important;
+}

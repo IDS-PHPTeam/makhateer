@@ -1,0 +1,313 @@
+.mapSection {
+    margin-top: 60px;
+    margin-bottom: 100px;
+}
+
+.mapSection .mapHolder {
+    position: relative;
+}
+
+.mapSection .mapHolder path,
+.mapSection .mapHolder polygon {
+    -moz-transition: all .3s;
+    -webkit-transition: all .3s;
+    transition: all .3s;
+}
+
+.mapSection .mapHolder path:hover,
+.mapSection .mapHolder polygon:hover {
+    fill: #181818!important;
+    cursor: pointer;
+}
+
+.mapSection .mapIntro {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px 0;
+}
+
+.mapSection .mapIntro p {
+    color: #132c49;
+    font-size: 14px;
+    letter-spacing: 0;
+    line-height: 27px;
+}
+
+.mapSection .mapTooltip li {
+    width: 356px;
+    height: fit-content;
+    border: 1px solid #21538d;
+    background-color: #fff;
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+}
+
+.mapSection .mapTooltip li .dist-title {
+    height: 69px;
+    background-color: #21538d;
+    text-align: center;
+    padding: 15px;
+}
+
+.mapSection .mapTooltip li .dist-title h5 {
+    font-size: 24px;
+    letter-spacing: 0;
+    line-height: 42px;
+    text-align: center;
+    color: #fff;
+    font-weight: normal;
+}
+
+.mapSection .mapTooltip li .dist-data {
+    padding: 12px 19px;
+    text-align: right;
+}
+
+.mapSection .mapTooltip li .dist-data .total {
+    color: #21538d;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0;
+    line-height: 31px;
+    margin-bottom: 25px;
+}
+
+.mapSection .mapTooltip li .dist-data .total .total-title {
+    padding-left: 20px;
+}
+
+.mapSection .mapTooltip li .dist-data .total span.total-number {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.mapSection .mapTooltip li .dist-data .data {
+    display: flex;
+    text-align: right;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    padding-bottom: 20px;
+}
+
+.mapSection .mapTooltip li .dist-data .data .female-data,
+.mapSection .mapTooltip li .dist-data .data .male-data {
+    color: #3f3f3f;
+    font-size: 14px;
+    letter-spacing: 0;
+    line-height: 18px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    position: relative;
+}
+
+.mapSection .mapTooltip li .dist-data .data .female-data .number,
+.mapSection .mapTooltip li .dist-data .data .male-data .number {
+    font-weight: bold;
+    padding-top: 11px;
+}
+
+.mapSection .mapTooltip li .dist-data .data .male-data:after {
+    content: "";
+    position: absolute;
+    height: 47px;
+    width: 2px;
+    border-right: 1px solid #ddd;
+    left: -28px;
+}
+
+.mapSection .mapTooltip li .dist-data .showMore {
+    padding-top: 12px;
+    text-align: center;
+    border-top: 1px solid #21538d;
+    margin-left: -20px;
+    margin-right: -20px;
+}
+
+.mapSection .mapTooltip li .dist-data .showMore a {
+    color: #21538d;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0;
+    display: block;
+}
+
+.mapSection .mapTooltip li.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-baalbak] {
+    top: 192px;
+    right: 10px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-beqaa-gharbe] {
+    bottom: 174px;
+    right: 290px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-rachaya] {
+    bottom: 174px;
+    right: 205px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-zahle] {
+    top: 458px;
+    right: 161px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-jezzine] {
+    top: 619px;
+    left: 0;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-sour] {
+    left: -126px;
+    bottom: 169px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-saida] {
+    left: -68px;
+    bottom: 327px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-batroun] {
+    left: 118px;
+    top: 116px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-koura] {
+    left: 180px;
+    top: 41px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-elmenye] {
+    left: 300px;
+    top: 0;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-bcharre] {
+    left: 260px;
+    top: 111px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-zgharta] {
+    left: 241px;
+    top: 20px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-tripoli] {
+    left: 200px;
+    top: 0;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-nabatiyeh] {
+    left: -13px;
+    bottom: 251px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-bnt-jbeil] {
+    left: -57px;
+    bottom: 93px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-hasbaya] {
+    right: 326px;
+    bottom: 257px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-marjeyoun] {
+    left: -9px;
+    bottom: 167px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-hermel] {
+    right: -80px;
+    top: 0;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-beirut] {
+    left: -9px;
+    top: 370px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-chouf] {
+    left: -9px;
+    top: 550px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-matn] {
+    left: 76px;
+    top: 374px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-baabda] {
+    left: 27px;
+    top: 409px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-byblos] {
+    left: 115px;
+    top: 190px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-aley] {
+    left: 0;
+    top: 451px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-kesrwen] {
+    left: 128px;
+    top: 264px;
+}
+
+.mapSection .mapTooltip li[data-dist=dist-akkar] {
+    right: 30px;
+    top: -35px;
+}
+
+.statMap {
+    background-image: url("../images/banner.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 340px;
+    display: flex;
+    align-items: center;
+}
+
+.statMap h2 {
+    color: #fff;
+    font-weight: normal;
+}
+
+.mapHolder text {
+    cursor: pointer;
+}
+
+.zc-menu-sep {
+    border: none;
+}
+
+.mapNote {
+    display: block;
+    text-align: center;
+    margin-top: 22px;
+    font-size: 16px;
+    direction: rtl;
+}
+
+.mapNote img {
+    width: 20px;
+    margin-left: 10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.innerPaddingAr {
+    padding: 40px 0;
+    text-align: right;
+    direction: rtl;
+}

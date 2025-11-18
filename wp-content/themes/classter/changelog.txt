@@ -1,0 +1,97 @@
+Version 2.5
+	Fixed:
+        - Compatibility with PHP7
+        - Compatibility with WordPress 4.9.5
+        - Update plugins to their latest versions
+        - Compatibility with WooCommerce 3.0+
+        - Zoom Shortcode
+        - Improve theme styles
+        - Update documentation
+
+    Added:
+        - ThemeREX Utilities plugin
+
+    Changed:
+        - Move Importer to ThemeREX Utilities plugin
+
+Version 2.4.1
+	Fixed:
+	- Message's maxlength bug
+	\themes\classter\functions.php
+
+Version 2.4.Dev.03 (Dima Prokop)
+    * Require "shortcodes settings" for child theme ( classter\shortcodes\shortcodes.php ) Line 6 - 12
+    * CSS minor update (woo-style.css)
+
+Version 2.4.Dev.02 (albushi)
+	* The theme is now compatible with version WooCommerce 3.0 and higher.
+		\themes\classter\functions.php
+		\themes\classter\style.css
+		\themes\classter\css\woo-style.css
+		\themes\classter\js\_front.js
+
+Version 2.4
+	* Social login improved
+	* VC theme setup updated
+
+Version 2.3
+    + Google Map update
+
+Version 2.2
+    * Revslider plugins updated
+    * Theme compatibility with new version of RevSlider is improved.
+    * Visual Composer is updated
+
+Version 2.1.1
+    * Layout of shortcode [trx_form_item] is fixed (Form item - custom field).
+    * Minor fixes in comment form fields layout.
+
+Version 2.1
+    * WordPress 4.5 ready
+    * All plugins updated
+    * Layout of shortcode [trx_gap] is fixed.
+
+Version 2.0
+	Visual Composer is updated to its latest version
+	* Minor fixes in some shortcodes layout.
+	+ Scripts, styles and font loading is based on the current site protocol: http or https
+
+Version 1.9.1
+	Visual Composer is updated to its latest version
+
+Version 1.9
+	+ Compatibility with VC latest versions is improved.
+    + Instagram plugin updated
+    Fixed: Layout of shortcode [trx_gap] is fixed.
+
+Version 1.8
+	* Theme compatibility with new version of Visual Composer 4.6.0 is improved.
+	+ Plugins included in the theme, updated to their latest versions.
+
+Version 1.7
+	* Fixed: Script Google maps
+	* Fixed: 'Google map' shortcode is updated
+
+Version 1.6
+	Added: Compatibility with BuddyPress and bbPress plug-ins with basic styles is added.
+	* Fixed: "QRCode generator" widget is fixed
+
+Version 1.5
+	* Fixed: We have fixed styles according to changes in the new version of WooCommerce
+    * Fixed: In Safari, buttons in the slider are now center-aligned (used to stick up)
+
+Version 1.4
+	* Fixed: The menu became sticky when scrolling up and down, not only when scrolling up as it used to be.
+
+Version 1.3
+	+ Added: New parameter "Active column" is added to the shortcode "Price table item". The parameter allows to make the column active without hovering over it.
+
+Version 1.2
+	* Fixed: Shortcodes functionality improved
+	* Fixed: Login form shows up when top user menu or left navigation panels are turned ON
+
+Version 1.1
+	+ Added: Built-in demo data import: one click  - and your website becomes a precise copy of our demo site!
+
+Version 1.0
+	Release

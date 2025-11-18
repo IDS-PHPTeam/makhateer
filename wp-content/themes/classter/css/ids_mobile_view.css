@@ -1,0 +1,6 @@
+#topOfPage,
+header,
+.footerContentWrap,
+#wpadminbar {
+    display: none !important;
+}
