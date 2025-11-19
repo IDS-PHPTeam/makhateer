@@ -55,3 +55,15 @@ xmlrpc.php
 wp-content/advanced-cache.php
 wp-content/autoptimize_404_handler.php
 *.log
+wp-content/themes/twentynineteen/*
+wp-content/themes/twentyseventeen/*
+wp-content/themes/twentytwenty/*
+wp-content/themes/twentytwentyone/*
+wp-content/themes/twentytwentytwo/*
+wp-content/themes/twentytwentythree/*
+wp-content/themes/twentytwentyfour/*
+wp-content/themes/twentytwentyfive/*
+wp-content/themes/twentytwentysix/*
+wp-content/themes/twentytwentyseven/*
+wp-content/themes/twentytwentyeight/*
+wp-content/themes/twentytwentynine/*

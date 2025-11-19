@@ -6,23 +6,23 @@ require ABSPATH .'vendor/autoload.php';
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use GuzzleHttp\Client;
 
-// $notification['title']="Qasemti - New Order #15879";
-// $notification['body']="New Order #15879";
+// $notification['title']="test";
+// $notification['body']="test";
 
-// $notification['type']="1";
+// // $notification['type']="1";
 // $notification['typeId']="1";
-// $notification['badge']="1";
+// $notification['sound']="1";
 // $notification['id']="1";
 
 
-// push_notification_v1(['fdKF7vP97E2uriTztjVl8Q:APA91bEUYm3rT6xWko5Rz6xDtvb-LRYg-2Fh0061Ln74EGFiwLrUlslqIEwnTtzjRbT1wq86dkQJl6pQ6EvWopEwc0MjS25WDt80eR0B7I2DIHwUS0O4hR7XOIcEKP8ssOrci_qjwep7'], $notification, ['1']);
+// push_notification_v1(['fKS2POdtRxCUwi4kBrs_zL:APA91bFgJdX3LEw-77LXjUF0-XbNXhkJQiGqB42N0BvkELxgiBK2k5KcCsm-YFxjY9TN7D2FBra4UhB4rQHP47yYGxLz6mi4pYDSLHE8AtyZkrl5a345_7sWkiTwtlMZKvzRQETMxSDC'], $notification, ['1'],2);
 // exit;
 
-// push_notification_v1($array_device_tokens,$arrNotification, $array_mobilenotification_ids, 2);
 
 function push_notification_v1($registation_ids, $notification, $mobile_notification_ids, $device_type)
 {
     
+
     global $wpdb;
     
     if($notification['body']):
@@ -49,18 +49,16 @@ function push_notification_v1($registation_ids, $notification, $mobile_notificat
     if($device_type==1){
         $data = [
             'type'  => (string)$notification["type"],
-            'typeId'  => (string)$notification["typeId"],
             'id'  => (string)$notification["id"],
-            'badge'  => (string)$notification["badge"]
+            'sound'  => (string)$notification["sound"]
         ];
     }elseif($device_type==2){
         $data = [
             'title' => (string)$notification["title"],
             'body'  => (string)$notification["body"],
             'type'  => (string)$notification["type"],
-            'typeId'  => (string)$notification["typeId"],
             'id'  => (string)$notification["id"],
-            'badge'  => (string)$notification["badge"]
+            'sound'  => (string)$notification["sound"]
         ];
     }
         
@@ -106,7 +104,9 @@ function push_notification_v1($registation_ids, $notification, $mobile_notificat
 
         // Optionally handle successful response
         $statusCode = $response->getStatusCode();
+
        if ($statusCode === 200) {
+          
         $query = "UPDATE wp_mobile_notifications SET is_sent = 1
         where ID IN ('" . implode("','", $mobile_notification_ids) . "') \n";
        }
@@ -116,11 +116,14 @@ function push_notification_v1($registation_ids, $notification, $mobile_notificat
         // Handle request exceptions (like network errors, invalid responses, etc.)
         $query = "UPDATE wp_mobile_notifications SET is_sent = -1
         where ID IN ('" . implode("','", $mobile_notification_ids) . "') \n";
+        // print_r($e);
     
     } catch (\Exception $e) {
         // Handle any other general exceptions
         $query = "UPDATE wp_mobile_notifications SET is_sent = -1
         where ID IN ('" . implode("','", $mobile_notification_ids) . "') \n";
+        // print_r($e);
+
     }
     $wpdb->query($query);
 

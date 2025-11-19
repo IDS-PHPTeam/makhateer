@@ -64,6 +64,7 @@ $labels_ar["download"]  = "تحميل";
 $labels_ar["post_title"]  = "عنوان الملف";
 $labels_ar["post_description"]  = "وصف الملف";
 $labels_ar["submit"]  = "شارك";
+$labels_ar["read_more"]  = "يد";
 
 $labels_en["section_title"]  = "Share New File";
 $labels_en["upload"]  = "Choose a file";
@@ -72,7 +73,7 @@ $labels_en["post_title"]  = "File Title";
 $labels_en["post_description"]  = "File Description";
 $labels_en["submit"]  = "Share";
 
-
+$labels_en["read_more"]  = "Read More";
 
 // Fetch all posts of type: "services".
 

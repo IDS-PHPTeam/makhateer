@@ -113,11 +113,11 @@ if (empty($THEMEREX_usermenu) || !$THEMEREX_usermenu_show) {
 			<?php
 			if ($lang == 'ar') {
 			?>
-				<li class="usermenu_logout"><a href="<?php echo admin_url("admin-ajax.php"); ?>?action=ids_user_logout_frontend" class="user-popup-link"><i class="fa fa-user-times" aria-hidden="true"></i><label><?php _e('تسجيل الخروج', 'themerex'); ?></label></a></li>
+				<li class="usermenu_logout"><a href="<?php echo wp_logout_url( home_url()); ?>" class="user-popup-link"><i class="fa fa-user-times" aria-hidden="true"></i><label><?php _e('تسجيل الخروج', 'themerex'); ?></label></a></li>
 
 			<?php } else if ($lang == 'en_US') { ?>
 
-				<li class="usermenu_logout"><a href="<?php echo admin_url("admin-ajax.php"); ?>?action=ids_user_logout_frontend" class="user-popup-link"><i class="fa fa-user-plus" aria-hidden="true"></i><label><?php _e('Logout', 'themerex'); ?></label></a></li>
+				<li class="usermenu_logout"><a href="<?php echo wp_logout_url( home_url()); ?>" class="user-popup-link"><i class="fa fa-user-plus" aria-hidden="true"></i><label><?php _e('Logout', 'themerex'); ?></label></a></li>
 	<?php }
 		}
 	}

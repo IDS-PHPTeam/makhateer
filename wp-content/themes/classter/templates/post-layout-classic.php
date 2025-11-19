@@ -275,21 +275,23 @@ line-height:25px;
 																																																					}
 
 
-																																																					$value = get_field("file");
+																										$value = get_field("file");
+																																																					$pdfs = get_post_meta(get_the_ID(), 'attachements_pdf', true);
+																																																					$single_pdf= get_post_meta(get_the_ID(), 'file', true);
 
-																																																					if ($value) {
+																																																					if (!empty($pdfs) || $single_pdf) {
 																																																						$lang = get_locale();
 																																																						if ($lang == 'ar') {
 								?>
 
-									<span class="post_file"><a href="<?php echo $value['url']; ?> " target="_blank"> تحميل</a></span>
+									<span class="post_file"><a href="<?php echo esc_url($post_data['post_link']); ?> ">اقرأ المزيد</a></span>
 
 
 								<?php
 																																																						} else {
 
 								?>
-									<span class="post_file"><a href="<?php echo $value['url']; ?> " target="_blank">Download</a></span>
+									<span class="post_file"><a href="<?php echo esc_url($post_data['post_link']); ?> ">Read More</a></span>
 								<?php
 																																																						}
 																																																					}

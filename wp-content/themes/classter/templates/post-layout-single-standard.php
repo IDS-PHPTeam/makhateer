@@ -89,24 +89,49 @@ startWrapper(array(
 					        
 					}
 					$value = get_field( "file" );
+					$pdfs = get_post_meta(get_the_ID(), 'attachements_pdf', true);
+					$single_pdf= get_post_meta(get_the_ID(), 'file', true);
+
 					
-					if( $value ) {
 					    $lang = get_locale();
-					    if($lang=='ar'){
+						if(!empty($pdfs) || $single_pdf) { 
+					    	if($lang=='ar'){
 					    ?>
-					    
-					    <span class="post_file post_file1"><a href="<?php echo $value['url'];?> " target="_blank"> تحميل</a></span>
-					    
-					    
-					    <?php 
-					    }else{
+							<h2 class="post_attach_header"> <b>الملفات المرفقة</b></h2>
+						<?php
+						} else { ?>
+						<h2 class="post_attach_header"> <b>Attachments</b></h2>
+						<?php } 
+					
+					 ?>
+						<?php 
+					
+						echo '<ul class="pdf-lists">';
+						if(is_singular('bids')) {
+						foreach ($pdfs as $pdf) {
+							$title = get_the_title($pdf);
+							$pdf_icon = '<img src="'. site_url().'/wp-content/themes/classter/assets/images/icons/pdf.svg" class="w-auto mt-2" alt="calendar" style="height: 20px">';
+							
+							
+							echo '<li>' . $pdf_icon . '<a target="_blank" href="' . get_permalink($pdf) . '">' . $title . '</a> </li>';
+						}	
+					} else {
+						$title = get_the_title($single_pdf);
+						$pdf_icon = '<img src="'. site_url().'/wp-content/themes/classter/assets/images/icons/pdf.svg" class="w-auto mt-2" alt="calendar" style="height: 20px">';
+						
+						
+						echo '<li>' . $pdf_icon . '<a target="_blank" href="' . get_permalink($single_pdf) . '">' . $title . '</a> </li>';
+					
+
+					}					
+						echo '</ul>';
+						}
+						?>
+
+						<?php
+						
 					        
-					        ?>
-					        <span class="post_file post_file1"><a href="<?php echo $value['url'];?> " target="_blank" > Download</a></span>
-					        <?php 
-					    }
-					        
-					}
+					
 						$value1 = get_field( "phone" );
 				//	print_r($value1);
 					if( $value1 ) {

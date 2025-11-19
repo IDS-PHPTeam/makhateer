@@ -13,6 +13,8 @@ if (!defined('THEMEREX_THEME_PATH'))	define('THEMEREX_THEME_PATH',	trailingslash
 
 /* ========================= Theme setup section ============================== */
 
+require_once 'notifications_functions.php';
+
 add_action('after_setup_theme', 'themerex_theme_setup');
 if (!function_exists('themerex_theme_setup')) {
 	function themerex_theme_setup()
@@ -175,9 +177,10 @@ if (!function_exists('themerex_theme_setup')) {
 		add_filter('theme_logo_text', 'themerex_logo_text', 10, 2);
 	}
 }
+-
+require get_template_directory() . '/shortcode_bids.php';
 
-wp_enqueue_script( 'recaptchav3', 'https://www.recaptcha.net/recaptcha/api.js?render=6Le3tzAmAAAAAMfKu6IVM6vdbwh56e0aeSHnipzi');
-require_once 'notifications_functions.php';
+// wp_enqueue_script( 'recaptchav3', 'https://www.recaptcha.net/recaptcha/api.js?render=6Le3tzAmAAAAAMfKu6IVM6vdbwh56e0aeSHnipzi');
 
 /**
  * Register widgetized area and update sidebar with default widgets
@@ -5179,10 +5182,10 @@ function ids_authenticate_user_frontend()
 
 		if ($_SESSION['redirect_to']) {
 			wp_redirect($_SESSION['redirect_to']);
-			exit;
+			wp_die();
 		} else {
 			wp_redirect(get_site_url());
-			exit;
+			wp_die();
 		}
 	}
 }
@@ -5808,6 +5811,116 @@ jQuery('#send_user_notification').removeAttr('checked');
 </script>
 <?php
 }
+
+add_action("wp_enqueue_scripts","ids_site_scripts");
+function ids_site_scripts(){
+  wp_enqueue_script( 'recaptchav3', 'https://www.recaptcha.net/recaptcha/api.js?render=6LetL-6Le3HfonAAAAABld_Gpj4rnBGvKjj7ODIuxbN-xn');
+}
+
+  function hide_menu() {
+
+	$user = wp_get_current_user();
+	if ( in_array( 'manage_requests', (array) $user->roles ) ) {
+
+	      remove_menu_page( 'activity_log_page' );
+		  remove_menu_page( 'index.php' );
+		  remove_menu_page( 'wpcf7' );
+		  remove_menu_page( 'edit.php?post_type=video_gallery' );
+		  remove_menu_page( 'profile.php' );
+		  remove_menu_page( 'revslider' );
+		  remove_menu_page( 'rb_resume' );
+		  remove_menu_page( 'edit.php?post_type=rb_resume' ); 
+		  remove_menu_page( 'edit.php?post_type=diary' );
+		  remove_menu_page( 'ids_poll_ml' );
+		  remove_menu_page( 'wprps-premium' );
+		  remove_menu_page( 'edit.php?post_type=statistic' );
+		  remove_menu_page( 'edit.php?post_type=notification' ); 
+		  remove_menu_page( 'edit.php' );
+		  remove_menu_page( 'edit.php?post_type=rb_resume' ); 
+		  remove_menu_page( 'rb_resume' ); 
+		  remove_menu_page( 'edit.php?post_type=laws' );
+		  remove_menu_page( 'edit.php?post_type=faq' );
+		  remove_menu_page( 'edit.php?post_type=gs_team' ); 
+		  remove_menu_page( 'edit.php?post_type=decrees' );
+		  remove_menu_page( 'edit.php?post_type=decisions' );
+		  remove_menu_page( 'edit.php?post_type=bids' );
+		  remove_menu_page( 'edit.php?post_type=mokhtar' );
+		  remove_menu_page( 'edit.php?post_type=templates' );
+		  remove_menu_page( 'edit.php?post_type=services' );
+		  remove_menu_page( 'edit.php?post_type=press_release' );
+		  remove_menu_page( 'edit-comments.php' );
+		  remove_menu_page( 'tools.php' );
+		  remove_menu_page( 'wpseo_workouts' );
+		  remove_menu_page( 'vc-welcome' );
+		  remove_menu_page( 'wprps-about' );
+		  remove_menu_page( 'post-new.php' );
+		?>
+
+		<?php
+		}
+
+		if ( in_array( 'manage_bids', (array) $user->roles ) ) {
+			remove_menu_page( 'wprps-premium' );
+		    remove_menu_page( 'index.php' );
+			remove_menu_page( 'ids_poll_ml' );
+			remove_menu_page( 'wprps-premium' );
+			remove_menu_page( 'wpcf7' );
+			remove_menu_page( 'vc-welcome' );
+			remove_menu_page( 'profile.php' );
+			remove_menu_page( 'edit.php?post_type=requests' );
+
+			remove_menu_page( 'edit.php?post_type=statistic' );
+			remove_menu_page( 'edit.php?post_type=notification' ); 
+			remove_menu_page( 'edit.php?post_type=rb_resumes');
+			remove_menu_page( 'edit.php?post_type=faq' );
+			remove_menu_page( 'edit.php?post_type=gs_team' ); 
+			remove_menu_page( 'edit.php?post_type=mokhtar' );
+			remove_menu_page( 'edit.php?post_type=templates' );
+			remove_menu_page( 'edit.php?post_type=services' );
+			remove_menu_page( 'edit.php?post_type=press_release' );
+			remove_menu_page( 'edit-comments.php' );
+			remove_menu_page( 'tools.php' );
+			remove_menu_page( 'wpseo_workouts' );
+			remove_menu_page( 'vc-welcome' );
+			remove_menu_page( 'wprps-premium' );
+
+			?>
+
+		   <?php
+		  }
+	
+	}
+	add_action('admin_head', 'hide_menu');
+
+
+	function enqueue_scripts_and_styles_for_user_role() {
+		$user = wp_get_current_user();
+		if ( in_array( 'manage_requests', (array) $user->roles ) ) {
+
+			wp_enqueue_style('ids-manage-requests-style', get_template_directory_uri() . '/css/manage-requests.css');
+		}
+		elseif ( in_array( 'manage_bids', (array) $user->roles ) ) {
+			wp_enqueue_style('ids-manage-bids-style', get_template_directory_uri() . '/css/manage-bids.css');
+		}
+	  }
+
+	  add_action('admin_enqueue_scripts', 'enqueue_scripts_and_styles_for_user_role');
+
+
+      add_filter( 'xmlrpc_enabled', '__return_false' ); 
+
+
+function allow_editor_full_builder_access() {
+    $role = get_role('editor');
+    if ($role) {
+        $role->add_cap('edit_others_pages');
+        $role->add_cap('edit_published_pages');
+        $role->add_cap('publish_pages');
+        $role->add_cap('edit_pages');
+    }
+}
+add_action('init', 'allow_editor_full_builder_access');
+
 
 
 ?>

@@ -424,7 +424,8 @@ if ((!$slider_show || $body_style != 'boxed') && $show_top_panel == 'over') $sho
 									});
 
 									$(".usermenu_logout").click(function() {
-										window.location.href = "<?php echo admin_url("admin-ajax.php"); ?>?action=ids_user_logout_frontend";
+										
+										window.location.href = "<?php echo wp_logout_url( home_url()); ?>";
 									});
 								});
 							</script>

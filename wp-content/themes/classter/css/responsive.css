@@ -1,4 +1,105 @@
+/*.row.bids,#wppsac-post-carousel-1 {*/
+/*    width: 80%;*/
+/*    margin: 0 auto;*/
+/*}*/
+
+html:lang(ar) .bids-article span.post_file {
+    width: 100% !important;
+    text-align: left !important;
+    bottom: 10px !important;
+    position: absolute !important;
+    float: left !important;
+    left: 10px !important;
+}
+
+html:lang(en-US) .bids-article span.post_file {
+    width: 100% !important;
+    text-align: right !important;
+    bottom: 10px !important;
+    position: absolute !important;
+    right: 10px !important;
+}
+
+/* Contact Form Recaptcha */
+html:lang(ar) span.wpcf7-form-control.g-recaptcha.wpcf7-recaptcha div {
+	width: 55% !important;
+	margin-top: 15px !important;
+}
+
+html:lang(ar) .ids-contactform-recaptcha .wpcf7-form-control.wpcf7-recaptcha div { 
+     padding-right: 0px !important;
+} 
+
+html:lang(en-US)  span.wpcf7-form-control.g-recaptcha.wpcf7-recaptcha div {
+    float: left;
+	width: 56% !important;
+	margin-top: 15px !important;
+}
+
+
+html:lang(en-US) .ids-contactform-recaptcha .wpcf7-form-control.wpcf7-recaptcha div { 
+     padding-right: 12px !important;
+} 
+
+/* Bids PDF */
+.pdf-lists li {
+    list-style: none !important;
+}
+
+/* shortcode: Bids */
+
+.page-id-1746 .slick-slide, .page-id-6846 .slick-slide{
+    height: 50% !important;
+}
+
+.latest_bids {
+    display: none !important;;
+}
+
+.bids-article .post_wrap {
+    padding: 15px 20px 15px !important;
+}
+
+.bids-article .post_format_wrap.postStandard {
+    width: 320px !important;
+}
+.bids-article {
+    background-color: #f5f7f9 !important;
+}
+
+.bids_content h4 {
+
+	font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height:25px !important;
+}
+
+.page-id-1746 .bids_button {
+    padding-left: 25px !important;
+}
+
+@media (max-width: 1500px) {
+    .page-id-1746 .slick-slide, .page-id-6846 .slick-slide {
+        height: 100% !important;
+    }
+    .slick-list.draggable {
+        height: 420px !important;
+    }
+
+}
+@media (max-width: 1023px) {
+    .bids-article  {
+        margin-bottom: 12px !important;
+    }
+    .page-id-1746 .slick-slide {
+        height: 70% !important;
+    }
+}
+
 @media (min-width: 1023px) {
+    /* .page-id-1746 .slick-slide, .page-id-6846 .slick-slide {
+        height: 100% !important;
+    } */
     .woocommerce .woocommerce-message > a.button,
     .woocommerce-page .woocommerce-message > a.button {
         margin-bottom: -13px;
