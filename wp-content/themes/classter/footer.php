@@ -37,47 +37,125 @@ global $logo_footer, $logo_text;
 			?>
 
 			<div class="footerContentWrap">
-				<?php
-				// ---------------- Footer contacts ----------------------
-				if (($contact_style = get_custom_option('show_contacts_in_footer')) != 'no'  ) {
-					$address_1 = get_theme_option('contact_address_1');
-					$address_2 = get_theme_option('contact_address_2');
-					$phone = get_theme_option('contact_phone');
-					$fax = get_theme_option('contact_fax');
-					if ($contact_style=='yes') $contact_style = 'dark';
-				?>
-				<footer class="footerWrap footerStyle<?php echo themerex_strtoproper($contact_style); ?> contactFooterWrap">
-					<div class="main contactFooter">
-						<section>
-							<div class="logo">
-								<a href="<?php echo esc_url(home_url()); ?>"><?php echo (esc_attr($logo_text) ? '<span class="logo_text">'.apply_filters('theme_logo_text', $logo_text, 'footer').'</span>' : ''); ?><?php echo (esc_attr($logo_footer) ? '<img src="'.esc_url($logo_footer).'" alt="">' : ''); ?></a>
-							</div>
-							<div class="contactAddress">
-								<address class="addressRight">
-									<?php echo __('Phone:', 'themerex') . ' ' . esc_attr($phone); ?><br>
-									<?php echo __('Fax:', 'themerex') . ' ' . esc_attr($fax); ?>
-								</address>
-								<address class="addressLeft">
-									<?php echo esc_attr($address_2); ?><br>
-									<?php echo esc_attr($address_1); ?>
-								</address>
-							</div>
-							<div class="contactShare">
-								<ul>
-									<?php
-										$socials = get_theme_option('social_icons');
+			<?php
+			// ---------------- Footer contacts ----------------------
+			if (($contact_style = get_custom_option('show_contacts_in_footer')) != 'no'  ) {
+				// Get theme options values
+				$theme_phone_number = get_option('theme_phone_number', '');
+				$theme_phone_link = get_option('theme_phone_link', '');
+				$theme_email_address = get_option('theme_email_address', '');
+				$theme_email_link = get_option('theme_email_link', '');
+				$theme_location_text_en = get_option('theme_location_text_en', '');
+				$theme_location_text_ar = get_option('theme_location_text_ar', '');
+				$theme_location_link = get_option('theme_location_link', '');
+				$theme_facebook_text_en = get_option('theme_facebook_text_en', '');
+				$theme_facebook_text_ar = get_option('theme_facebook_text_ar', '');
+				$theme_facebook_link = get_option('theme_facebook_link', '');
+				
+				// Fallback to existing theme options if new theme options are empty
+				$address_1 = get_theme_option('contact_address_1');
+				$address_2 = get_theme_option('contact_address_2');
+				$phone = !empty($theme_phone_number) ? $theme_phone_number : get_theme_option('contact_phone');
+				$fax = get_theme_option('contact_fax');
+				
+				// Get current language
+				$lang = get_locale();
+				$is_arabic = ($lang == 'ar');
+				
+				// Set location text based on language
+				$location_text = $is_arabic ? $theme_location_text_ar : $theme_location_text_en;
+				if (empty($location_text)) {
+					$location_text = $is_arabic ? $theme_location_text_en : $theme_location_text_ar;
+				}
+				if (empty($location_text)) {
+					$location_text = !empty($address_2) ? $address_2 : $address_1;
+				}
+				
+				// Set Facebook text based on language
+				$facebook_text = $is_arabic ? $theme_facebook_text_ar : $theme_facebook_text_en;
+				if (empty($facebook_text)) {
+					$facebook_text = $is_arabic ? $theme_facebook_text_en : $theme_facebook_text_ar;
+				}
+				
+				if ($contact_style=='yes') $contact_style = 'dark';
+			?>
+			<footer class="footerWrap footerStyle<?php echo themerex_strtoproper($contact_style); ?> contactFooterWrap">
+				<div class="main contactFooter">
+					<section>
+						<div class="logo">
+							<a href="<?php echo esc_url(home_url()); ?>"><?php echo (esc_attr($logo_text) ? '<span class="logo_text">'.apply_filters('theme_logo_text', $logo_text, 'footer').'</span>' : ''); ?><?php echo (esc_attr($logo_footer) ? '<img src="'.esc_url($logo_footer).'" alt="">' : ''); ?></a>
+						</div>
+						<div class="contactAddress">
+							<address class="addressRight">
+								<?php if (!empty($phone)): ?>
+									<?php if (!empty($theme_phone_link)): ?>
+										<?php echo __('Phone:', 'themerex') . ' <a href="' . esc_url($theme_phone_link) . '">' . esc_html($phone) . '</a>'; ?>
+									<?php else: ?>
+										<?php echo __('Phone:', 'themerex') . ' ' . esc_html($phone); ?>
+									<?php endif; ?>
+									<br>
+								<?php endif; ?>
+								<?php if (!empty($theme_email_address)): ?>
+									<?php if (!empty($theme_email_link)): ?>
+										<?php echo __('Email:', 'themerex') . ' <a href="' . esc_url($theme_email_link) . '">' . esc_html($theme_email_address) . '</a>'; ?>
+									<?php else: ?>
+										<?php echo __('Email:', 'themerex') . ' <a href="mailto:' . esc_attr($theme_email_address) . '">' . esc_html($theme_email_address) . '</a>'; ?>
+									<?php endif; ?>
+									<br>
+								<?php endif; ?>
+								<?php if (!empty($fax)): ?>
+									<?php echo __('Fax:', 'themerex') . ' ' . esc_html($fax); ?>
+								<?php endif; ?>
+							</address>
+							<address class="addressLeft">
+								<?php if (!empty($location_text)): ?>
+									<?php if (!empty($theme_location_link)): ?>
+										<a href="<?php echo esc_url($theme_location_link); ?>" target="_blank"><?php echo esc_html($location_text); ?></a>
+									<?php else: ?>
+										<?php echo esc_html($location_text); ?>
+									<?php endif; ?>
+									<?php if (!empty($address_2) && $location_text != $address_2): ?>
+										<br><?php echo esc_html($address_2); ?>
+									<?php endif; ?>
+									<?php if (!empty($address_1) && $location_text != $address_1): ?>
+										<br><?php echo esc_html($address_1); ?>
+									<?php endif; ?>
+								<?php else: ?>
+									<?php if (!empty($address_2)): ?>
+										<?php echo esc_html($address_2); ?><br>
+									<?php endif; ?>
+									<?php if (!empty($address_1)): ?>
+										<?php echo esc_html($address_1); ?>
+									<?php endif; ?>
+								<?php endif; ?>
+							</address>
+						</div>
+						<div class="contactShare">
+							<ul>
+								<?php
+									// Add Facebook link if available
+									if (!empty($theme_facebook_link)) {
+										$fb_text = !empty($facebook_text) ? esc_html($facebook_text) : 'Facebook';
+										?><li><a class="social_icons facebook" href="<?php echo esc_url($theme_facebook_link); ?>" target="_blank" title="<?php echo esc_attr($fb_text); ?>"></a></li><?php
+									}
+									// Existing social icons
+									$socials = get_theme_option('social_icons');
+									if (is_array($socials)) {
 										foreach ($socials as $s) {
 											if (empty($s['url'])) continue;
 											$name = basename($s['icon']);
+											// Skip if it's a duplicate Facebook icon
+											if ($name == 'facebook' && !empty($theme_facebook_link)) continue;
 											?><li><a class="social_icons <?php echo esc_attr($name); ?>" href="<?php echo esc_url($s['url']); ?>" target="_blank"></a></li><?php
 										}
-									?>
-								</ul>
-							</div>
-						</section>
-					</div>
-				</footer>
-				<?php } ?>
+									}
+								?>
+							</ul>
+						</div>
+					</section>
+				</div>
+			</footer>
+			<?php } ?>
 
 				<?php
 				// ----------------- Google map -----------------------

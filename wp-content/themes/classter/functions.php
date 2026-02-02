@@ -2025,17 +2025,38 @@ function ids_about_us(WP_REST_Request $request)
 	//$pattern = "/<a href=\"tel?.*>(.*)<\/a>/";
 	//preg_match($pattern, $page->post_content, $matches);
 
-	$response["phone"] = "07123456";
+	// Get phone from theme options
+	$response["phone"] = get_option('theme_phone_number', '');
 
 	//$pattern = "/<a href=\"mailto?.*>(.*)<\/a>/";
 	//preg_match($pattern, $page->post_content, $matches);
 
-	$response["email"] = "info@makhateer.com";
+	// Get email from theme options
+	$response["email"] = get_option('theme_email_address', '');
+
+	// Get location from theme options
+	$theme_lat = get_option('theme_location_latitude', '');
+	$theme_long = get_option('theme_location_longitude', '');
+	$theme_address_ar = get_option('theme_location_text_ar', '');
+	$theme_address_en = get_option('theme_location_text_en', '');
+	
+	// Determine language - default to 'en' if not provided or empty
+	$lang_param = $request->get_param('lang');
+	$lang = (!empty($lang_param) && $lang_param == 'ar') ? 'ar' : 'en';
+	$is_arabic = ($lang == "ar");
+	
+	// Determine address based on language
+	$address = '';
+	if ($is_arabic) {
+		$address = !empty($theme_address_ar) ? $theme_address_ar : $theme_address_en;
+	} else {
+		$address = !empty($theme_address_en) ? $theme_address_en : $theme_address_ar;
+	}
 
 	$response["location"] = array(
-		"lat" => 33.87718,
-		"long" => 35.522073,
-		"address" => $request["lang"] == "ar" ? "شارع إلياس الهراوي, الأشرفية, بيروت, 10650 الأشرفية بيروت لبنان" : "Elias Hrawi Street, Achrafieh, Beirut, 10650 Achrafieh Beirut Lebanon"
+		"lat" => !empty($theme_lat) ? floatval($theme_lat) : '',
+		"long" => !empty($theme_long) ? floatval($theme_long) : '',
+		"address" => $address
 	);
 
 	return $response;
@@ -5922,5 +5943,581 @@ function allow_editor_full_builder_access() {
 add_action('init', 'allow_editor_full_builder_access');
 
 
+// Theme Options Page
+// Register settings
+function theme_options_register_settings() {
+    // Phone settings
+    register_setting('theme_options_group', 'theme_phone_number');
+    register_setting('theme_options_group', 'theme_phone_link');
+    
+    // Email settings
+    register_setting('theme_options_group', 'theme_email_address');
+    register_setting('theme_options_group', 'theme_email_link');
+    
+    // Location settings
+    register_setting('theme_options_group', 'theme_location_text_en');
+    register_setting('theme_options_group', 'theme_location_text_ar');
+    register_setting('theme_options_group', 'theme_location_link');
+    register_setting('theme_options_group', 'theme_location_latitude');
+    register_setting('theme_options_group', 'theme_location_longitude');
+    
+    // Facebook settings
+    register_setting('theme_options_group', 'theme_facebook_text_en');
+    register_setting('theme_options_group', 'theme_facebook_text_ar');
+    register_setting('theme_options_group', 'theme_facebook_link');
+}
+add_action('admin_init', 'theme_options_register_settings');
+
+// Add admin menu
+function theme_options_add_admin_menu() {
+    add_menu_page(
+        'Theme Options',
+        'Theme Options',
+        'manage_options',
+        'theme-options',
+        'theme_options_page',
+        'dashicons-admin-generic',
+        30
+    );
+}
+add_action('admin_menu', 'theme_options_add_admin_menu');
+
+// Render options page
+function theme_options_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have sufficient permissions to access this page.'));
+    }
+    
+    // Handle form submission
+    if (isset($_POST['theme_options_submit'])) {
+        check_admin_referer('theme_options_nonce');
+        
+        // Save all settings
+        update_option('theme_phone_number', sanitize_text_field($_POST['theme_phone_number']));
+        update_option('theme_phone_link', esc_url_raw($_POST['theme_phone_link']));
+        update_option('theme_email_address', sanitize_email($_POST['theme_email_address']));
+        update_option('theme_email_link', esc_url_raw($_POST['theme_email_link']));
+        update_option('theme_location_text_en', sanitize_text_field($_POST['theme_location_text_en']));
+        update_option('theme_location_text_ar', sanitize_text_field($_POST['theme_location_text_ar']));
+        update_option('theme_location_link', esc_url_raw($_POST['theme_location_link']));
+        update_option('theme_location_latitude', sanitize_text_field($_POST['theme_location_latitude']));
+        update_option('theme_location_longitude', sanitize_text_field($_POST['theme_location_longitude']));
+        update_option('theme_facebook_text_en', sanitize_text_field($_POST['theme_facebook_text_en']));
+        update_option('theme_facebook_text_ar', sanitize_text_field($_POST['theme_facebook_text_ar']));
+        update_option('theme_facebook_link', esc_url_raw($_POST['theme_facebook_link']));
+        
+        echo '<div class="notice notice-success"><p>Settings saved successfully!</p></div>';
+    }
+    
+    // Get current values
+    $phone_number = get_option('theme_phone_number', '');
+    $phone_link = get_option('theme_phone_link', '');
+    $email_address = get_option('theme_email_address', '');
+    $email_link = get_option('theme_email_link', '');
+    $location_text_en = get_option('theme_location_text_en', '');
+    $location_text_ar = get_option('theme_location_text_ar', '');
+    $location_link = get_option('theme_location_link', '');
+    $location_latitude = get_option('theme_location_latitude', '');
+    $location_longitude = get_option('theme_location_longitude', '');
+    $facebook_text_en = get_option('theme_facebook_text_en', '');
+    $facebook_text_ar = get_option('theme_facebook_text_ar', '');
+    $facebook_link = get_option('theme_facebook_link', '');
+    ?>
+    <div class="wrap">
+        <h1>Theme Options</h1>
+        <form method="post" action="">
+            <?php wp_nonce_field('theme_options_nonce'); ?>
+            
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="theme_phone_number">Phone Number</label></th>
+                    <td>
+                        <input type="text" id="theme_phone_number" name="theme_phone_number" value="<?php echo esc_attr($phone_number); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_phone_link">Phone Link</label></th>
+                    <td>
+                        <input type="url" id="theme_phone_link" name="theme_phone_link" value="<?php echo esc_attr($phone_link); ?>" class="regular-text" />
+                        <p class="description">e.g., tel:+1234567890</p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th scope="row"><label for="theme_email_address">Email Address</label></th>
+                    <td>
+                        <input type="email" id="theme_email_address" name="theme_email_address" value="<?php echo esc_attr($email_address); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_email_link">Email Link</label></th>
+                    <td>
+                        <input type="url" id="theme_email_link" name="theme_email_link" value="<?php echo esc_attr($email_link); ?>" class="regular-text" />
+                        <p class="description">e.g., mailto:info@example.com</p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th scope="row"><label for="theme_location_text_en">Location Text (English)</label></th>
+                    <td>
+                        <input type="text" id="theme_location_text_en" name="theme_location_text_en" value="<?php echo esc_attr($location_text_en); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_location_text_ar">Location Text (Arabic)</label></th>
+                    <td>
+                        <input type="text" id="theme_location_text_ar" name="theme_location_text_ar" value="<?php echo esc_attr($location_text_ar); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_location_link">Location Link</label></th>
+                    <td>
+                        <input type="url" id="theme_location_link" name="theme_location_link" value="<?php echo esc_attr($location_link); ?>" class="regular-text" />
+                        <p class="description">e.g., Google Maps link</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_location_latitude">Latitude</label></th>
+                    <td>
+                        <input type="text" id="theme_location_latitude" name="theme_location_latitude" value="<?php echo esc_attr($location_latitude); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_location_longitude">Longitude</label></th>
+                    <td>
+                        <input type="text" id="theme_location_longitude" name="theme_location_longitude" value="<?php echo esc_attr($location_longitude); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th scope="row"><label for="theme_facebook_text_en">Facebook Text (English)</label></th>
+                    <td>
+                        <input type="text" id="theme_facebook_text_en" name="theme_facebook_text_en" value="<?php echo esc_attr($facebook_text_en); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_facebook_text_ar">Facebook Text (Arabic)</label></th>
+                    <td>
+                        <input type="text" id="theme_facebook_text_ar" name="theme_facebook_text_ar" value="<?php echo esc_attr($facebook_text_ar); ?>" class="regular-text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="theme_facebook_link">Facebook Link</label></th>
+                    <td>
+                        <input type="url" id="theme_facebook_link" name="theme_facebook_link" value="<?php echo esc_attr($facebook_link); ?>" class="regular-text" />
+                        <p class="description">e.g., https://facebook.com/yourpage</p>
+                    </td>
+                </tr>
+            </table>
+            
+            <?php submit_button('Save Settings', 'primary', 'theme_options_submit'); ?>
+        </form>
+    </div>
+    <?php
+}
+
+// Shortcode for English Footer Contact
+function theme_options_footer_contact_en($atts) {
+    // Get theme options values
+    $phone_number = get_option('theme_phone_number', '');
+    $phone_link = get_option('theme_phone_link', '');
+    $email_address = get_option('theme_email_address', '');
+    $email_link = get_option('theme_email_link', '');
+    $location_text = get_option('theme_location_text_en', '');
+    $location_link = get_option('theme_location_link', '');
+    $facebook_text = get_option('theme_facebook_text_en', '');
+    $facebook_link = get_option('theme_facebook_link', '');
+    
+    // Fallback to Arabic if English is empty
+    if (empty($location_text)) {
+        $location_text = get_option('theme_location_text_ar', '');
+    }
+    if (empty($facebook_text)) {
+        $facebook_text = get_option('theme_facebook_text_ar', '');
+    }
+    
+    // Set default phone link if not provided
+    if (empty($phone_link) && !empty($phone_number)) {
+        $phone_link = 'tel:' . preg_replace('/[^0-9+]/', '', $phone_number);
+    }
+    
+    // Set default email link if not provided
+    if (empty($email_link) && !empty($email_address)) {
+        $email_link = 'mailto:' . $email_address;
+    }
+    
+    ob_start();
+    ?>
+    <aside id="theme-footer-contact-en" class="widget aboutus-widget">
+        <div class="pl_about_us_widget">
+            <div class="ids-footer-contact__div">
+                <?php if (!empty($phone_number)): ?>
+                    <p class="theme-contact-detail theme-contact-left">
+                        <a href="<?php echo esc_url($phone_link); ?>" class="theme-contact-icon">
+                            <i class="fa fa-phone"></i>
+                        </a>
+                        <span>
+                            <a href="<?php echo esc_url($phone_link); ?>">
+                                <?php echo esc_html($phone_number); ?>
+                            </a>
+                        </span>
+                    </p>
+                <?php endif; ?>
+                
+                <?php if (!empty($email_address)): ?>
+                    <p class="theme-contact-detail theme-contact-left">
+                        <a href="<?php echo esc_url($email_link); ?>" class="theme-contact-icon">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                        <span>
+                            <a href="<?php echo esc_url($email_link); ?>">
+                                <?php echo esc_html($email_address); ?>
+                            </a>
+                        </span>
+                    </p>
+                <?php endif; ?>
+            </div>
+            
+            <div class="ids-footer-contact__div">
+                <?php if (!empty($location_text)): ?>
+                    <p class="theme-contact-detail theme-contact-detail1 theme-contact-left">
+                        <?php if (!empty($location_link)): ?>
+                            <a href="<?php echo esc_url($location_link); ?>" target="_blank" class="theme-contact-icon">
+                                <i class="fa fa-map-marker"></i>
+                            </a>
+                        <?php else: ?>
+                            <span class="theme-contact-icon">
+                                <i class="fa fa-map-marker"></i>
+                            </span>
+                        <?php endif; ?>
+                        <span>
+                            <?php if (!empty($location_link)): ?>
+                                <a href="<?php echo esc_url($location_link); ?>" target="_blank">
+                                    <?php echo esc_html($location_text); ?>
+                                </a>
+                            <?php else: ?>
+                                <?php echo esc_html($location_text); ?>
+                            <?php endif; ?>
+                        </span>
+                    </p>
+                <?php endif; ?>
+                
+                <?php if (!empty($facebook_link)): ?>
+                    <p class="theme-contact-detail theme-contact-detail1 theme-contact-left">
+                        <a href="<?php echo esc_url($facebook_link); ?>" target="_blank" class="theme-contact-icon" title="Facebook">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                        <span>
+                            <a href="<?php echo esc_url($facebook_link); ?>" target="_blank">
+                                <?php echo esc_html($facebook_text); ?>
+                            </a>
+                        </span>
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </aside>
+    <style type="text/css" id="theme-footer-contact-en-style">
+        #theme-footer-contact-en .theme-contact-icon {
+            display: inline-flex !important;
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            max-width: 40px !important;
+            border-radius: 50% !important;
+            background-color: #e0e0e0 !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+        #theme-footer-contact-en .theme-contact-icon i {
+            color: #333 !important;
+            font-size: 18px !important;
+            line-height: 1 !important;
+        }
+        #theme-footer-contact-en .theme-contact-detail {
+            display: flex !important;
+            align-items: flex-start !important;
+            margin-bottom: 10px !important;
+        }
+        /* All items - icons on left, aligned consistently */
+        #theme-footer-contact-en .theme-contact-left {
+            flex-direction: row !important;
+        }
+        #theme-footer-contact-en .theme-contact-left .theme-contact-icon {
+            margin-right: 10px !important;
+            margin-left: 0 !important;
+            margin-top: 0 !important;
+        }
+        #theme-footer-contact-en .theme-contact-left span {
+            text-align: left !important;
+            padding-left: 0 !important;
+            flex: 1 !important;
+            min-width: 0 !important;
+        }
+        #theme-footer-contact-en .theme-contact-detail span a {
+            display: inline !important;
+            word-wrap: break-word !important;
+            text-align: left !important;
+        }
+        /* Ensure consistent container layout */
+        #theme-footer-contact-en .ids-footer-contact__div {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+    </style>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('footer_contact_en', 'theme_options_footer_contact_en');
+
+// Shortcode for Arabic Footer Contact
+function theme_options_footer_contact_ar($atts) {
+    // Get theme options values
+    $phone_number = get_option('theme_phone_number', '');
+    $phone_link = get_option('theme_phone_link', '');
+    $email_address = get_option('theme_email_address', '');
+    $email_link = get_option('theme_email_link', '');
+    $location_text = get_option('theme_location_text_ar', '');
+    $location_link = get_option('theme_location_link', '');
+    $facebook_text = get_option('theme_facebook_text_ar', '');
+    $facebook_link = get_option('theme_facebook_link', '');
+    
+    // Fallback to English if Arabic is empty
+    if (empty($location_text)) {
+        $location_text = get_option('theme_location_text_en', '');
+    }
+    if (empty($facebook_text)) {
+        $facebook_text = get_option('theme_facebook_text_en', '');
+    }
+    
+    // Set default phone link if not provided
+    if (empty($phone_link) && !empty($phone_number)) {
+        $phone_link = 'tel:' . preg_replace('/[^0-9+]/', '', $phone_number);
+    }
+    
+    // Set default email link if not provided
+    if (empty($email_link) && !empty($email_address)) {
+        $email_link = 'mailto:' . $email_address;
+    }
+    
+    ob_start();
+    ?>
+    <aside id="theme-footer-contact-ar" class="widget aboutus-widget">
+        <div class="pl_about_us_widget">
+            <div class="ids-footer-contact__div">
+                <?php if (!empty($phone_number)): ?>
+                    <p class="theme-contact-detail theme-contact-right">
+                        <span>
+                            <a href="<?php echo esc_url($phone_link); ?>">
+                                <?php echo esc_html($phone_number); ?>
+                            </a>
+                        </span>
+                        <a href="<?php echo esc_url($phone_link); ?>" class="theme-contact-icon">
+                            <i class="fa fa-phone"></i>
+                        </a>
+                    </p>
+                <?php endif; ?>
+                
+                <?php if (!empty($email_address)): ?>
+                    <p class="theme-contact-detail theme-contact-right">
+                        <span>
+                            <a href="<?php echo esc_url($email_link); ?>">
+                                <?php echo esc_html($email_address); ?>
+                            </a>
+                        </span>
+                        <a href="<?php echo esc_url($email_link); ?>" class="theme-contact-icon">
+                            <i class="fa fa-envelope-o"></i>
+                        </a>
+                    </p>
+                <?php endif; ?>
+            </div>
+            
+            <div class="ids-footer-contact__div">
+                <?php if (!empty($location_text)): ?>
+                    <p class="theme-contact-detail theme-contact-detail1 theme-contact-right">
+                        <span>
+                            <?php if (!empty($location_link)): ?>
+                                <a href="<?php echo esc_url($location_link); ?>" target="_blank">
+                                    <?php echo esc_html($location_text); ?>
+                                </a>
+                            <?php else: ?>
+                                <?php echo esc_html($location_text); ?>
+                            <?php endif; ?>
+                        </span>
+                        <?php if (!empty($location_link)): ?>
+                            <a href="<?php echo esc_url($location_link); ?>" target="_blank" class="theme-contact-icon">
+                                <i class="fa fa-map-marker"></i>
+                            </a>
+                        <?php else: ?>
+                            <span class="theme-contact-icon">
+                                <i class="fa fa-map-marker"></i>
+                            </span>
+                        <?php endif; ?>
+                    </p>
+                <?php endif; ?>
+                
+                <?php if (!empty($facebook_link)): ?>
+                    <p class="theme-contact-detail theme-contact-detail1 theme-contact-right">
+                        <span>
+                            <a href="<?php echo esc_url($facebook_link); ?>" target="_blank">
+                                <?php echo esc_html($facebook_text); ?>
+                            </a>
+                        </span>
+                        <a href="<?php echo esc_url($facebook_link); ?>" target="_blank" class="theme-contact-icon" title="Facebook">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </aside>
+    <style type="text/css" id="theme-footer-contact-ar-style">
+        #theme-footer-contact-ar .theme-contact-icon {
+            display: inline-flex !important;
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            background-color: #e0e0e0 !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+        #theme-footer-contact-ar .theme-contact-icon i {
+            color: #333 !important;
+            font-size: 18px !important;
+            line-height: 1 !important;
+        }
+        #theme-footer-contact-ar .theme-contact-detail {
+            display: flex !important;
+            align-items: center !important;
+            margin-bottom: 5px !important;
+        }
+        #theme-footer-contact-ar .theme-contact-detail:last-child {
+            margin-bottom: 0 !important;
+        }
+        #theme-footer-contact-ar .theme-contact-right {
+            flex-direction: row-reverse !important;
+        }
+        #theme-footer-contact-ar .theme-contact-right .theme-contact-icon {
+            margin-left: 10px !important;
+            margin-right: 0 !important;
+        }
+        #theme-footer-contact-ar .theme-contact-detail span {
+            flex: 1 !important;
+        }
+        #theme-footer-contact-ar .ids-footer-contact__div {
+            margin-bottom: 0 !important;
+        }
+    </style>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('footer_contact_ar', 'theme_options_footer_contact_ar');
+
+// Fix icons for footer quick links
+function theme_footer_icons_fix() {
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        // Replace fal classes with fa classes in footer widgets
+        $('.footerWidget .fal').each(function() {
+            var $this = $(this);
+            var classes = $this.attr('class');
+            if (classes) {
+                classes = classes.replace(/\bfal\b/g, 'fa');
+                $this.attr('class', classes);
+            }
+        });
+        
+        // Also replace fal in any menu items
+        $('.footerWidget .widget_nav_menu .fal, .footerWidget .menu .fal').each(function() {
+            var $this = $(this);
+            var classes = $this.attr('class');
+            if (classes) {
+                classes = classes.replace(/\bfal\b/g, 'fa');
+                $this.attr('class', classes);
+            }
+        });
+    });
+    </script>
+    <style type="text/css">
+        /* Remove/hide fal (Font Awesome Light) classes and force fa */
+        .footerWidget .fal,
+        .footerWidget i.fal,
+        .footerWidget .fal.fa-angle-right,
+        .footerWidget .fal.fa-angle-left {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        
+        /* Force fa classes to use FontAwesome font */
+        .footerWidget .fa,
+        .footerWidget i.fa,
+        .footerWidget .fa-angle-right,
+        .footerWidget .fa-angle-left,
+        .footerWidget i.fa-angle-right,
+        .footerWidget i.fa-angle-left {
+            font-family: "FontAwesome" !important;
+            font-weight: normal !important;
+        }
+        
+        /* Fix quick links icons - replace empty squares with proper icons */
+        .footerWidget .widget_nav_menu ul li a:before,
+        .footerWidget .menu li a:before,
+        .footerWidget .widget ul li a:before {
+            content: "\f105" !important; /* Font Awesome fa-angle-right */
+            font-family: "FontAwesome" !important;
+            font-weight: normal !important;
+            display: inline-block !important;
+            margin-right: 8px !important;
+            margin-left: 0 !important;
+            width: auto !important;
+            height: auto !important;
+            background: none !important;
+            border: none !important;
+            color: inherit !important;
+            font-size: 14px !important;
+            vertical-align: middle !important;
+        }
+        
+        /* For Arabic (RTL) - use fa-angle-left */
+        html[dir="rtl"] .footerWidget .widget_nav_menu ul li a:before,
+        html[dir="rtl"] .footerWidget .menu li a:before,
+        html[dir="rtl"] .footerWidget .widget ul li a:before,
+        html:lang(ar) .footerWidget .widget_nav_menu ul li a:before,
+        html:lang(ar) .footerWidget .menu li a:before,
+        html:lang(ar) .footerWidget .widget ul li a:before {
+            content: "\f104" !important; /* Font Awesome fa-angle-left */
+            margin-right: 0 !important;
+            margin-left: 8px !important;
+        }
+        
+        /* Remove empty square/checkbox appearance */
+        .footerWidget .widget_nav_menu ul li a,
+        .footerWidget .menu li a,
+        .footerWidget .widget ul li a {
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        /* Ensure any existing icon elements are properly styled */
+        .footerWidget .widget_nav_menu ul li a i,
+        .footerWidget .menu li a i,
+        .footerWidget .widget ul li a i {
+            font-family: "FontAwesome" !important;
+            font-weight: normal !important;
+        }
+        
+        /* Newsletter email field styling */
+        [name="esfpx_es_hp_email"] {
+            width: fit-content !important;
+            background: unset !important;
+            border: unset !important;
+        }
+    </style>
+    <?php
+}
+add_action('wp_footer', 'theme_footer_icons_fix');
 
 ?>
