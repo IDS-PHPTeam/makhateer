@@ -3796,11 +3796,8 @@ function ids_polls_page(WP_REST_Request $request)
 	$content = $html_structure;
 	$content .= ob_get_clean();
 
-	ob_start();
-
-	do_shortcode("[ids_poll id=1]");
-
-	$content .= ob_get_clean();
+	$poll_lang = ($language === 'ar') ? 'ar' : 'en';
+	$content .= do_shortcode('[ids_poll id="1" lang="' . $poll_lang . '"]');
 
 	$content = $content . "</div></div></div></div></div></body></html>";
 	$content = preg_replace("/[\n\r\t]/", "", $content);
@@ -4250,44 +4247,55 @@ function ids_calculate_eos(WP_REST_Request $request)
 {
 	$parameters = json_decode($request->get_body(), true);
 
-	$request_origin = "";
-
-	if (!$parameters) {
+	if (!is_array($parameters) || empty($parameters)) {
+		$parameters = $request->get_body_params();
+	}
+	if (!is_array($parameters) || empty($parameters)) {
 		$parameters = $_POST;
 	}
+	if (!is_array($parameters)) {
+		$parameters = array();
+	}
 
-	$is_from_web = filter_var($parameters["from_web"], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-	$request_origin = 	$is_from_web ? "Web" : "Mobile";
+	$is_from_web = filter_var(isset($parameters["from_web"]) ? $parameters["from_web"] : false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+	$request_origin = $is_from_web ? "Web" : "Mobile";
 
-
-	$language_code = $parameters["lang"];
+	$language_code = isset($parameters["lang"]) ? sanitize_text_field($parameters["lang"]) : "ar";
 
 	// Logging Request Start.
 
-
-	$periods =  $parameters["periods"];
-	$is_currently_mokhtar = filter_var($parameters["is_currently_mokhtar"], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+	$periods = (isset($parameters["periods"]) && is_array($parameters["periods"])) ? $parameters["periods"] : array();
+	$is_currently_mokhtar = filter_var(isset($parameters["is_currently_mokhtar"]) ? $parameters["is_currently_mokhtar"] : false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
 	// The official lowest salary.
 	$amount_per_month = 675000;
 
 	$end_of_service_total = 0;
+	$difference_between_start_end = null;
 
 	// If user is currently Mokhtar, then we have to remove the current period from
 	// the array if it exists, since Mokhtar may enter the current period where he
 	// can't request an indemnity for the current period!
 
 	if ($is_currently_mokhtar) {
-		$periods = array_filter($periods, function($period)
-{
-	$current_year = date("Y");
+		$periods = array_filter($periods, function ($period) {
+			if (!is_array($period)) {
+				return false;
+			}
+			$current_year = (int) date("Y");
+			$start = isset($period["starting_year"]) ? (int) $period["starting_year"] : 0;
+			$end = isset($period["ending_year"]) ? (int) $period["ending_year"] : 0;
 
-	return $current_year >= (int)$period["starting_year"] && $current_year <= (int)$period["ending_year"];
-}, ARRAY_FILTER_USE_BOTH);
+			// Keep periods that are NOT the current electoral window.
+			return !($current_year >= $start && $current_year <= $end);
+		});
+		$periods = array_values($periods);
 	}
 
 	usort($periods, function ($period_previous, $period_next) {
-		return (int)$period_previous["ending_year"] > (int)$period_next["starting_year"];
+		$prev_end = isset($period_previous["ending_year"]) ? (int) $period_previous["ending_year"] : 0;
+		$next_start = isset($period_next["starting_year"]) ? (int) $period_next["starting_year"] : 0;
+		return $prev_end <=> $next_start;
 	});
 
 	$periods_number = count($periods);
@@ -4296,8 +4304,16 @@ function ids_calculate_eos(WP_REST_Request $request)
 	$completed_5_consecutive_periods = true;
 
 	if (count($periods) >= 5) {
-		foreach (array_keys($periods) as $period_key) {
-			if ($periods[$period_key + 1] && $periods[$period_key]["ending_year"] != $periods[$period_key + 1]["starting_year"]) {
+		$period_keys = array_keys($periods);
+		foreach ($period_keys as $i => $period_key) {
+			$next_key = isset($period_keys[$i + 1]) ? $period_keys[$i + 1] : null;
+			if ($next_key === null) {
+				continue;
+			}
+			if (
+				!isset($periods[$period_key]["ending_year"], $periods[$next_key]["starting_year"])
+				|| $periods[$period_key]["ending_year"] != $periods[$next_key]["starting_year"]
+			) {
 				$completed_5_consecutive_periods = false;
 			}
 		}
@@ -4310,9 +4326,12 @@ function ids_calculate_eos(WP_REST_Request $request)
 	$current_period_iteration = 0;
 
 	foreach ($periods as $period_key => &$period_value) {
+		if (!is_array($period_value)) {
+			continue;
+		}
 
-		$period_value["starting_year"] = (int)$period_value["starting_year"];
-		$period_value["ending_year"] = (int)$period_value["ending_year"];
+		$period_value["starting_year"] = isset($period_value["starting_year"]) ? (int) $period_value["starting_year"] : 0;
+		$period_value["ending_year"] = isset($period_value["ending_year"]) ? (int) $period_value["ending_year"] : 0;
 
 		// Periods before 2010 are not included in the calculation.
 		if ($period_value["starting_year"] < 2010) {
@@ -4322,33 +4341,26 @@ function ids_calculate_eos(WP_REST_Request $request)
 		$current_period_iteration++;
 
 		$working_years = 0;
-		$period_value["is_complete"] = filter_var($period_value["is_complete"], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+		$period_value["is_complete"] = filter_var(isset($period_value["is_complete"]) ? $period_value["is_complete"] : false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
 		if ($period_value["is_complete"]) {
 			$working_years = 6;
 		} else {
 			// We have to calculate based on the worked months.
-			$starting_date = DateTime::createFromFormat("Y-m-d", $period_value["starting_date"]);
+			$starting_raw = isset($period_value["starting_date"]) ? $period_value["starting_date"] : "";
+			$ending_raw = isset($period_value["ending_date"]) ? $period_value["ending_date"] : "";
+			$starting_date = DateTime::createFromFormat("Y-m-d", $starting_raw);
+			$ending_date = DateTime::createFromFormat("Y-m-d", $ending_raw);
 
-			$ending_date = DateTime::createFromFormat("Y-m-d", $period_value["ending_date"]);
+			if (!$starting_date || !$ending_date) {
+				$period_value["total"] = 0;
+				continue;
+			}
 
 			// Calculate the total number of worked months.
 			$difference_between_start_end = $starting_date->diff($ending_date);
 
-
 			$working_years = (($difference_between_start_end->y * 12) + ($difference_between_start_end->m) + ($difference_between_start_end->d ? 1 : 1)) / 12;
-
-
-			/*$starting_date->setDate($starting_date->format("Y"), $starting_date->format("m"), 1);
-
-			$ending_date->setDate($ending_date->format("Y"), $ending_date->format("m"), 1);
-
-			$starting_date_timestamp = $starting_date->getTimestamp();
-			$ending_date_timestamp = $ending_date->getTimestamp();
-
-			$dates_difference = abs($ending_date_timestamp - $starting_date_timestamp);
-
-			$working_years = floor($dates_difference / (365 * 60 * 60 * 24));*/
 		}
 
 		if ($period_value["ending_year"] == 2016) {
@@ -4373,6 +4385,7 @@ function ids_calculate_eos(WP_REST_Request $request)
 
 		$end_of_service_total += $period_value["total"];
 	}
+	unset($period_value);
 
 	$message = $language_code == "ar" ? "القيمة الكلية لتعويض نهاية الخدمة" : "Total amount of your severance pay is";
 
@@ -4401,10 +4414,9 @@ function ids_calculate_eos(WP_REST_Request $request)
 		)
 	);
 
-	file_put_contents(ABSPATH . "/ids-eos.txt", print_r($request_log, true), FILE_APPEND);
+	@file_put_contents(ABSPATH . "/ids-eos.txt", print_r($request_log, true), FILE_APPEND);
 
 	// Logging Request End.
-
 
 	return $result;
 }
@@ -4418,6 +4430,7 @@ add_action('rest_api_init', function () {
 	register_rest_route('api/v1', '/eos', array(
 		'methods' => 'POST',
 		'callback' => 'ids_calculate_eos',
+		'permission_callback' => '__return_true',
 	));
 });
 
@@ -4431,80 +4444,123 @@ add_action('rest_api_init', function () {
 
 function ids_handle_upload_mokhtar_service_file()
 {
+	@file_put_contents(ABSPATH . "/logs.txt", print_r($_FILES, true));
 
-	file_put_contents(ABSPATH . "/logs.txt", print_r($_FILES, true));
+	$redirect_to = wp_get_referer();
+	if (!$redirect_to) {
+		$redirect_to = home_url('/');
+	}
 
-	$wordpress_upload_dir = wp_upload_dir();
+	if (empty($_FILES['file']) || !is_array($_FILES['file'])) {
+		wp_die('File is not selected.');
+	}
 
 	$service_file = $_FILES['file'];
-	$new_file_path = $wordpress_upload_dir['basedir'] . '/services_system' . '/' . $service_file['name'];
 
-	$new_file_mime = mime_content_type($service_file['tmp_name']);
-
-	if (empty($service_file))
-		die('File is not selected.');
-
-	if ($service_file['error'])
-		die($service_file['error']);
-
-	if ($service_file['size'] > wp_max_upload_size())
-		die('It is too large than expected.');
-
-	if (!in_array($new_file_mime, get_allowed_mime_types()))
-		die('WordPress doesn\'t allow this type of uploads.');
-
-	// looks like everything is OK
-	if (move_uploaded_file($service_file['tmp_name'], $new_file_path)) {
-
-
-		$upload_id = wp_insert_attachment(array(
-			'guid'           => $new_file_path,
-			'post_mime_type' => $new_file_mime,
-			'post_title'     => preg_replace('/\.[^.]+$/', '', $service_file['name']),
-			'post_content'   => '',
-			'post_status'    => 'inherit'
-		), $new_file_path);
-
-		// wp_generate_attachment_metadata() won't work if you do not include this file
-		//require_once(ABSPATH . 'wp-admin/includes/image.php');
-
-		// Generate and save the attachment metas into the database
-		//wp_update_attachment_metadata($upload_id, wp_generate_attachment_metadata($upload_id, $new_file_path));
-
-		// Insert post of type: "Services"
-
-		$post_args = array(
-			"post_type" => "services",
-			"post_title" => $_POST["title_ar"],
-			"post_content" => $_POST["description_ar"],
-			"post_status" => "publish"
-		);
-
-		$post_id = wp_insert_post($post_args);
-		update_field("field_605319ce8b0db", $upload_id, $post_id);
-
-
-		$post_args = array(
-			"post_type" => "services",
-			"post_title" => $_POST["title_en"],
-			"post_content" => $_POST["description_en"],
-			"post_status" => "publish"
-		);
-
-		$post_id_en = wp_insert_post($post_args);
-		update_field("field_605319ce8b0db", $upload_id, $post_id_en);
-
-		global $polylang;
-		$polylang->model->set_post_language($post_id, 'ar');
-		$polylang->model->set_post_language($post_id_en, 'en');
-
-		$polylang->model->save_translations('post', $post_id, array('en' => $post_id_en));
-
-		// Show the uploaded file in browser
-		wp_redirect(wp_get_referer());
+	if (!empty($service_file['error'])) {
+		wp_die('Upload error code: ' . (int) $service_file['error']);
 	}
-	//$upload = wp_upload_bits($_FILES["ids_services_file_upload"]["name"], null, file_get_contents($_FILES["ids_services_file_upload"]["tmp_name"]));
-	wp_die();
+
+	if (empty($service_file['tmp_name']) || !is_uploaded_file($service_file['tmp_name'])) {
+		wp_die('File is not selected.');
+	}
+
+	if (!empty($service_file['size']) && (int) $service_file['size'] > wp_max_upload_size()) {
+		wp_die('It is too large than expected.');
+	}
+
+	$wordpress_upload_dir = wp_upload_dir();
+	$services_dir = trailingslashit($wordpress_upload_dir['basedir']) . 'services_system';
+	if (!file_exists($services_dir) && !wp_mkdir_p($services_dir)) {
+		wp_die('Upload folder could not be created.');
+	}
+
+	$original_name = isset($service_file['name']) ? $service_file['name'] : 'file.pdf';
+	$safe_name = sanitize_file_name($original_name);
+	if ($safe_name === '') {
+		$safe_name = 'service-' . time() . '.pdf';
+	}
+
+	$new_file_path = trailingslashit($services_dir) . wp_unique_filename($services_dir, $safe_name);
+	$new_file_mime = '';
+	if (function_exists('mime_content_type')) {
+		$new_file_mime = @mime_content_type($service_file['tmp_name']);
+	}
+	if (!$new_file_mime && !empty($service_file['type'])) {
+		$new_file_mime = $service_file['type'];
+	}
+
+	$allowed_mimes = array_values(get_allowed_mime_types());
+	$mime_ok = false;
+	foreach ($allowed_mimes as $allowed) {
+		$parts = array_map('trim', explode('|', $allowed));
+		if (in_array($new_file_mime, $parts, true)) {
+			$mime_ok = true;
+			break;
+		}
+	}
+	if (!$mime_ok) {
+		wp_die('WordPress doesn\'t allow this type of uploads.');
+	}
+
+	if (!move_uploaded_file($service_file['tmp_name'], $new_file_path)) {
+		wp_die('Failed to save uploaded file.');
+	}
+
+	$file_url = trailingslashit($wordpress_upload_dir['baseurl']) . 'services_system/' . basename($new_file_path);
+
+	$upload_id = wp_insert_attachment(array(
+		'guid'           => $file_url,
+		'post_mime_type' => $new_file_mime,
+		'post_title'     => preg_replace('/\.[^.]+$/', '', $safe_name),
+		'post_content'   => '',
+		'post_status'    => 'inherit'
+	), $new_file_path);
+
+	$title_ar = isset($_POST['title_ar']) ? sanitize_text_field(wp_unslash($_POST['title_ar'])) : '';
+	$desc_ar  = isset($_POST['description_ar']) ? sanitize_textarea_field(wp_unslash($_POST['description_ar'])) : '';
+	$title_en = isset($_POST['title_en']) ? sanitize_text_field(wp_unslash($_POST['title_en'])) : '';
+	$desc_en  = isset($_POST['description_en']) ? sanitize_textarea_field(wp_unslash($_POST['description_en'])) : '';
+
+	$post_id = wp_insert_post(array(
+		'post_type'    => 'services',
+		'post_title'   => $title_ar,
+		'post_content' => $desc_ar,
+		'post_status'  => 'publish'
+	));
+	if ($post_id && !is_wp_error($post_id) && function_exists('update_field')) {
+		update_field('field_605319ce8b0db', $upload_id, $post_id);
+	}
+
+	$post_id_en = wp_insert_post(array(
+		'post_type'    => 'services',
+		'post_title'   => $title_en,
+		'post_content' => $desc_en,
+		'post_status'  => 'publish'
+	));
+	if ($post_id_en && !is_wp_error($post_id_en) && function_exists('update_field')) {
+		update_field('field_605319ce8b0db', $upload_id, $post_id_en);
+	}
+
+	if ($post_id && $post_id_en && !is_wp_error($post_id) && !is_wp_error($post_id_en)) {
+		global $polylang;
+		if (isset($polylang->model) && is_object($polylang->model)) {
+			if (method_exists($polylang->model, 'set_post_language')) {
+				$polylang->model->set_post_language($post_id, 'ar');
+				$polylang->model->set_post_language($post_id_en, 'en');
+			}
+			if (method_exists($polylang->model, 'save_translations')) {
+				$polylang->model->save_translations('post', array('ar' => $post_id, 'en' => $post_id_en));
+			}
+		} elseif (function_exists('pll_set_post_language') && function_exists('pll_save_post_translations')) {
+			pll_set_post_language($post_id, 'ar');
+			pll_set_post_language($post_id_en, 'en');
+			pll_save_post_translations(array('ar' => $post_id, 'en' => $post_id_en));
+		}
+	}
+
+	wp_safe_redirect($redirect_to);
+	exit;
 }
 
 add_action("wp_ajax_ids_handle_upload_mokhtar_service_file", "ids_handle_upload_mokhtar_service_file");
@@ -4516,79 +4572,82 @@ add_action("wp_ajax_nopriv_ids_handle_upload_mokhtar_service_file", "ids_handle_
 
 function ids_api_handle_upload_mokhtar_service_file()
 {
-
-	//file_put_contents(ABSPATH . "/logs.txt", print_r($_FILES, true));
-
-	$wordpress_upload_dir = wp_upload_dir();
+	if (empty($_FILES['file']) || !is_array($_FILES['file'])) {
+		return array('result' => 0, 'error' => 'File is not selected.');
+	}
 
 	$service_file = $_FILES['file'];
-	$new_file_path = $wordpress_upload_dir['basedir'] . '/services_system' . '/' . $service_file['name'];
-
-	$new_file_mime = mime_content_type($service_file['tmp_name']);
-
-	if (empty($service_file))
-		die('File is not selected.');
-
-	if ($service_file['error'])
-		die($service_file['error']);
-
-	if ($service_file['size'] > wp_max_upload_size())
-		die('It is too large than expected.');
-
-	if (!in_array($new_file_mime, get_allowed_mime_types()))
-		die('WordPress doesn\'t allow this type of uploads.');
-
-	// looks like everything is OK
-	if (move_uploaded_file($service_file['tmp_name'], $new_file_path)) {
-
-
-		$upload_id = wp_insert_attachment(array(
-			'guid'           => $new_file_path,
-			'post_mime_type' => $new_file_mime,
-			'post_title'     => preg_replace('/\.[^.]+$/', '', $service_file['name']),
-			'post_content'   => '',
-			'post_status'    => 'inherit'
-		), $new_file_path);
-
-		// wp_generate_attachment_metadata() won't work if you do not include this file
-		//require_once(ABSPATH . 'wp-admin/includes/image.php');
-
-		// Generate and save the attachment metas into the database
-		//wp_update_attachment_metadata($upload_id, wp_generate_attachment_metadata($upload_id, $new_file_path));
-
-		// Insert post of type: "Services"
-
-		$post_args = array(
-			"post_type" => "services",
-			"post_title" => $_POST["title_ar"],
-			"post_content" => $_POST["description_ar"],
-			"post_status" => "publish"
-		);
-
-		$post_id = wp_insert_post($post_args);
-		update_field("field_605319ce8b0db", $upload_id, $post_id);
-
-
-		$post_args = array(
-			"post_type" => "services",
-			"post_title" => $_POST["title_en"],
-			"post_content" => $_POST["description_en"],
-			"post_status" => "publish"
-		);
-
-		$post_id_en = wp_insert_post($post_args);
-		update_field("field_605319ce8b0db", $upload_id, $post_id_en);
-
-		global $polylang;
-		$polylang->model->set_post_language($post_id, 'ar');
-		$polylang->model->set_post_language($post_id_en, 'en');
-
-		$polylang->model->save_translations('post', $post_id, array('en' => $post_id_en));
-
-		return array("result" => 1);
+	if (!empty($service_file['error']) || empty($service_file['tmp_name']) || !is_uploaded_file($service_file['tmp_name'])) {
+		return array('result' => 0, 'error' => 'Upload failed.');
 	}
-	//$upload = wp_upload_bits($_FILES["ids_services_file_upload"]["name"], null, file_get_contents($_FILES["ids_services_file_upload"]["tmp_name"]));
-	return array("result" => 0);
+
+	$wordpress_upload_dir = wp_upload_dir();
+	$services_dir = trailingslashit($wordpress_upload_dir['basedir']) . 'services_system';
+	if (!file_exists($services_dir) && !wp_mkdir_p($services_dir)) {
+		return array('result' => 0, 'error' => 'Upload folder missing.');
+	}
+
+	$safe_name = sanitize_file_name(isset($service_file['name']) ? $service_file['name'] : 'file.pdf');
+	if ($safe_name === '') {
+		$safe_name = 'service-' . time() . '.pdf';
+	}
+	$new_file_path = trailingslashit($services_dir) . wp_unique_filename($services_dir, $safe_name);
+
+	$new_file_mime = !empty($service_file['type']) ? $service_file['type'] : 'application/pdf';
+	if (function_exists('mime_content_type')) {
+		$detected = @mime_content_type($service_file['tmp_name']);
+		if ($detected) {
+			$new_file_mime = $detected;
+		}
+	}
+
+	if (!move_uploaded_file($service_file['tmp_name'], $new_file_path)) {
+		return array('result' => 0, 'error' => 'Failed to save uploaded file.');
+	}
+
+	$file_url = trailingslashit($wordpress_upload_dir['baseurl']) . 'services_system/' . basename($new_file_path);
+	$upload_id = wp_insert_attachment(array(
+		'guid'           => $file_url,
+		'post_mime_type' => $new_file_mime,
+		'post_title'     => preg_replace('/\.[^.]+$/', '', $safe_name),
+		'post_content'   => '',
+		'post_status'    => 'inherit'
+	), $new_file_path);
+
+	$title_ar = isset($_POST['title_ar']) ? sanitize_text_field(wp_unslash($_POST['title_ar'])) : '';
+	$desc_ar  = isset($_POST['description_ar']) ? sanitize_textarea_field(wp_unslash($_POST['description_ar'])) : '';
+	$title_en = isset($_POST['title_en']) ? sanitize_text_field(wp_unslash($_POST['title_en'])) : '';
+	$desc_en  = isset($_POST['description_en']) ? sanitize_textarea_field(wp_unslash($_POST['description_en'])) : '';
+
+	$post_id = wp_insert_post(array(
+		'post_type' => 'services',
+		'post_title' => $title_ar,
+		'post_content' => $desc_ar,
+		'post_status' => 'publish'
+	));
+	if ($post_id && !is_wp_error($post_id) && function_exists('update_field')) {
+		update_field('field_605319ce8b0db', $upload_id, $post_id);
+	}
+
+	$post_id_en = wp_insert_post(array(
+		'post_type' => 'services',
+		'post_title' => $title_en,
+		'post_content' => $desc_en,
+		'post_status' => 'publish'
+	));
+	if ($post_id_en && !is_wp_error($post_id_en) && function_exists('update_field')) {
+		update_field('field_605319ce8b0db', $upload_id, $post_id_en);
+	}
+
+	if ($post_id && $post_id_en && !is_wp_error($post_id) && !is_wp_error($post_id_en)) {
+		if (function_exists('pll_set_post_language') && function_exists('pll_save_post_translations')) {
+			pll_set_post_language($post_id, 'ar');
+			pll_set_post_language($post_id_en, 'en');
+			pll_save_post_translations(array('ar' => $post_id, 'en' => $post_id_en));
+		}
+	}
+
+	return array('result' => 1);
 }
 
 function ids_services_system(WP_REST_Request $request)
@@ -5290,20 +5349,27 @@ function ids_prevent_makhateer_from_accessign_wp_admin()
 		return;
 	}
 
+	$request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
 
-	// The following method is supposed to be working, but the "$wp->request" is empty!
+	// Allow frontend form posts / downloads that hit admin-ajax.php.
+	if (strpos($request_uri, 'admin-ajax.php') !== false || strpos($request_uri, 'admin-post.php') !== false) {
+		return;
+	}
 
-	// global $wp;
-	// $current_url = home_url(add_query_arg(array(), $wp->request));
+	if (strpos($request_uri, 'download_') !== false) {
+		return;
+	}
 
-	$current_url = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+	$current_url = (is_ssl() ? 'https://' : 'http://') . $host . $request_uri;
 
 	// is_admin() is NOT safe. DON'T use it.
 	// Instead check the user's role(s) manually.
 
 	$user = wp_get_current_user();
-	if (!in_array('administrator', (array) $user->roles) && in_array('Mokhtar', (array) $user->roles) && strpos($current_url, "wp-admin") && !strpos($current_url, "download_")) {
-		wp_redirect(get_site_url());
+	if (!in_array('administrator', (array) $user->roles) && in_array('Mokhtar', (array) $user->roles) && strpos($current_url, 'wp-admin') !== false) {
+		wp_safe_redirect(get_site_url());
+		exit;
 	}
 }
 
@@ -5837,6 +5903,76 @@ add_action("wp_enqueue_scripts","ids_site_scripts");
 function ids_site_scripts(){
   wp_enqueue_script( 'recaptchav3', 'https://www.recaptcha.net/recaptcha/api.js?render=6LetL-6Le3HfonAAAAABld_Gpj4rnBGvKjj7ODIuxbN-xn');
 }
+
+/**
+ * CPT card listings (?post_type=decrees|laws|...): 3 per row, taller cards
+ * so Read More does not overlap excerpt (overrides Additional CSS 130px).
+ */
+function ids_cpt_cards_should_fix()
+{
+	if (is_admin() || is_search()) {
+		return false;
+	}
+	$types = array('decrees', 'laws', 'decisions', 'diary', 'bids', 'requests', 'templates');
+	$qv = get_query_var('post_type');
+	if (is_array($qv)) {
+		$qv = reset($qv);
+	}
+	$qv = is_string($qv) ? sanitize_key($qv) : '';
+	$get = isset($_GET['post_type']) ? sanitize_key(wp_unslash($_GET['post_type'])) : '';
+	$pt = $qv !== '' ? $qv : $get;
+	return ($pt !== '' && in_array($pt, $types, true));
+}
+
+add_filter('body_class', function ($classes) {
+	if (ids_cpt_cards_should_fix()) {
+		$classes[] = 'ids-cpt-cards';
+	}
+	return $classes;
+});
+
+add_action('wp_enqueue_scripts', function () {
+	if (!ids_cpt_cards_should_fix()) {
+		return;
+	}
+	wp_enqueue_style(
+		'classter-cpt-cards-fix',
+		get_template_directory_uri() . '/css/cpt-cards-fix.css',
+		array(),
+		'1.1.3'
+	);
+	wp_enqueue_script(
+		'classter-cpt-cards-fix',
+		get_template_directory_uri() . '/js/cpt-cards-fix.js',
+		array('jquery'),
+		'1.1.3',
+		true
+	);
+}, 20);
+
+add_action('wp_head', function () {
+	if (!ids_cpt_cards_should_fix()) {
+		return;
+	}
+	echo '<style id="classter-cpt-cards-fix-late">'
+		. 'body.ids-cpt-cards section.masonry.cptCards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-rows:auto!important;gap:14px!important;height:auto!important;min-height:0!important;}'
+		. 'body.ids-cpt-cards section.masonry.cptCards::before,body.ids-cpt-cards section.masonry.cptCards::after{content:none!important;display:none!important;height:0!important;width:0!important;}'
+		. 'body.ids-cpt-cards .masonryWrap{height:auto!important;min-height:0!important;}'
+		. 'body.ids-cpt-cards #pagination,body.ids-cpt-cards .pagination{clear:both!important;margin-top:10px!important;}'
+		. 'body.ids-cpt-cards section.masonry.cptCards .isotopeElement{float:none!important;position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:100%!important;display:flex!important;flex-direction:column!important;}'
+		. 'body.ids-cpt-cards section.masonry.cptCards .isotopePadding.bg_post{position:relative!important;min-height:260px!important;height:100%!important;overflow:hidden!important;}'
+		. 'body.ids-cpt-cards .masonry .isotopePadding.bg_post .post_wrap{height:230px!important;min-height:230px!important;padding-bottom:48px!important;overflow:hidden!important;position:relative!important;box-sizing:border-box!important;}'
+		. 'body.ids-cpt-cards section.masonry.cptCards .post_wrap h4{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;max-height:2.6em!important;overflow:hidden!important;}'
+		. 'body.ids-cpt-cards section.masonry.cptCards .post_format_wrap{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:3!important;max-height:5.5em!important;overflow:hidden!important;}'
+		. 'body.ids-cpt-cards .masonry span.post_file,body.ids-cpt-cards .masonry .post_file{position:absolute!important;bottom:12px!important;top:auto!important;z-index:2!important;}'
+		. 'html:lang(ar) body.ids-cpt-cards .masonry span.post_file{left:20px!important;right:auto!important;}'
+		. 'html:lang(en) body.ids-cpt-cards .masonry span.post_file{right:20px!important;left:auto!important;}'
+		. 'html:lang(ar) body.ids-cpt-cards .pagination>ul>li.pager_prev>a:before,html:lang(ar) body.ids-cpt-cards #pagination>ul>li.pager_prev>a:before{content:"\\e804"!important;}'
+		. 'html:lang(ar) body.ids-cpt-cards .pagination>ul>li.pager_next>a:before,html:lang(ar) body.ids-cpt-cards #pagination>ul>li.pager_next>a:before{content:"\\e803"!important;}'
+		. '@media (max-width:767px){body.ids-cpt-cards section.masonry.cptCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;}}'
+		. '@media (max-width:479px){body.ids-cpt-cards section.masonry.cptCards{grid-template-columns:1fr!important;}}'
+		. '</style>';
+}, 99999);
 
   function hide_menu() {
 

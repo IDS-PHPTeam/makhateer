@@ -73,8 +73,17 @@ if ( ! class_exists( 'THEMEREX_VC_ShortCodeContainer' ) ) {
 
 		public function contentAdmin( $atts, $content = null ) {
 			$width = $el_class = '';
-			extract( shortcode_atts( $this->predefined_atts, $atts ) );
+			$atts = shortcode_atts( $this->predefined_atts, is_array( $atts ) ? $atts : array() );
+			extract( $atts );
+			$this->atts = $atts;
 			$output = '';
+
+			// PHP 8+: count() requires array|Countable. VC may leave $width as ''.
+			if ( empty( $width ) ) {
+				$width = array( '' );
+			} elseif ( ! is_array( $width ) ) {
+				$width = explode( ',', (string) $width );
+			}
 
 			$column_controls = $this->getColumnControls( $this->settings( 'controls' ) );
 			$column_controls_bottom = $this->getColumnControls( 'add', 'bottom-controls' );

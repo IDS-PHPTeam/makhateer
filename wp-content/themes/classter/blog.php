@@ -2,9 +2,47 @@
 /*
 Template Name: Blog streampage
 */
-get_header();
 global $THEMEREX_only_reviews, $THEMEREX_only_video, $THEMEREX_only_audio, $THEMEREX_only_gallery;
 global $wp_query, $post;
+
+// Floated isotope cards (Additional CSS) + isotope inline height make pagination overlap results.
+// Must enqueue before get_header() so assets print in <head>/<footer>.
+// Search cards: equal-height CSS grid (overrides Additional CSS / isotope).
+if (is_search()) {
+	wp_enqueue_style(
+		'classter-search-pagination-fix',
+		get_template_directory_uri() . '/css/search-pagination-fix.css',
+		array(),
+		'1.4.6'
+	);
+	wp_enqueue_script(
+		'classter-search-pagination-fix',
+		get_template_directory_uri() . '/js/search-pagination-fix.js',
+		array('jquery'),
+		'1.4.6',
+		true
+	);
+	add_action('wp_head', function () {
+		echo '<style id="classter-search-pagination-fix-late">'
+			. 'body.search section.masonry.searchCards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:stretch!important;gap:20px!important;height:auto!important;float:none!important;}'
+			. 'html:lang(ar) body.search section.masonry.searchCards article.isotopeElement,'
+			. 'body.search section.masonry.searchCards article.isotopeElement{float:none!important;position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:100%!important;align-self:stretch!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}'
+			. 'body.search section.masonry.searchCards .isotopePadding.bg_post{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;height:100%!important;overflow:hidden!important;}'
+			. 'body.search section.masonry.searchCards .thumb,body.search section.masonry.searchCards .post_thumb,body.search section.masonry.searchCards .isotopePadding.bg_post>.thumb,body.search section.masonry.searchCards .isotopePadding.bg_post>.post_thumb{display:none!important;height:0!important;margin:0!important;padding:0!important;}'
+			. 'body.search section.masonry.searchCards .isotopePadding.bg_post::before{content:none!important;display:none!important;}'
+			. 'body.search .masonry .isotopePadding.bg_post .post_wrap,body.search section.masonry.searchCards .post_wrap{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;height:auto!important;max-height:none!important;overflow:visible!important;}'
+			. 'body.search section.masonry.searchCards .post_wrap h4{max-height:none!important;overflow:visible!important;}'
+			. 'body.search section.masonry.searchCards .post_wrap .post_file,body.search section.masonry.searchCards .post_wrap .squareButton,body.search section.masonry.searchCards .post_wrap .moreWrapMasonry{margin-top:auto!important;}'
+			. 'body.search #pagination{clear:both!important;display:block!important;float:none!important;position:relative!important;width:100%!important;margin:40px 0!important;}'
+			. 'html:lang(ar) .pagination>ul>li.pager_prev>a:before,html:lang(ar) #pagination>ul>li.pager_prev>a:before{content:"\\e804"!important;}'
+			. 'html:lang(ar) .pagination>ul>li.pager_next>a:before,html:lang(ar) #pagination>ul>li.pager_next>a:before{content:"\\e803"!important;}'
+			. '@media(max-width:1023px){body.search section.masonry.searchCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;}}'
+			. '@media(max-width:767px){body.search section.masonry.searchCards{grid-template-columns:1fr!important;}}'
+			. '</style>';
+	}, 99999);
+}
+
+get_header();
 
 $blog_style = get_custom_option('blog_style');
 $show_sidebar_main = get_custom_option('show_sidebar_main');
@@ -75,7 +113,10 @@ if (themerex_strpos($blog_style, 'masonry')!==false || themerex_strpos($blog_sty
 		<?php if (get_custom_option('show_filters')=='yes') { ?>
 		<div class="isotopeFiltr"></div>
 		<?php } ?>
-		<section class="masonry <?php echo 'masonry-colums-'.themerex_substr($blog_style, -1); ?> <?php echo get_custom_option('show_filters')=='yes' ? 'isotope' :  'isotopeNOanim'; ?>" data-columns="<?php echo themerex_substr($blog_style, -1); ?>">
+		<section class="masonry <?php echo 'masonry-colums-'.themerex_substr($blog_style, -1); ?> <?php
+			// Search uses equal-height CSS grid cards; other archives keep isotope.
+			echo is_search() ? 'searchCards' : (get_custom_option('show_filters')=='yes' ? 'isotope' : 'isotopeNOanim');
+		?>" data-columns="<?php echo themerex_substr($blog_style, -1); ?>">
 <?php
 } else if (themerex_strpos($blog_style, 'portfolio')!==false) {
 ?>
@@ -258,6 +299,7 @@ if ($post_number > 0) {
 			<?php
 		}
 	} else {
+		echo '<div class="paginationClear" style="clear:both;width:100%;height:0;"></div>';
 		showPagination(array(
 			'class' => 'pagination',
 			'style' => 'pages',

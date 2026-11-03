@@ -2,16 +2,33 @@
 
 $current_user = wp_get_current_user();
 
-if (empty($current_user->ID) || !ids_is_mokhtar()) {
-    session_start();
+if (empty($current_user->ID) || !function_exists('ids_is_mokhtar') || !ids_is_mokhtar()) {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
 
-    $redirect_to = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-    $_SESSION['redirect_to'] = $redirect_to;
+    $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+    $uri  = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+    $_SESSION['redirect_to'] = (is_ssl() ? 'https://' : 'http://') . $host . $uri;
 
-    $page = get_page_by_path("login");
-    $page_id_current_language = pll_get_post($page->ID, get_locale());
+    $login_url = home_url('/');
+    $page      = get_page_by_path('login');
+    if ($page) {
+        $page_id = $page->ID;
+        if (function_exists('pll_get_post')) {
+            $translated = pll_get_post($page->ID, get_locale());
+            if ($translated) {
+                $page_id = $translated;
+            }
+        }
+        $permalink = get_permalink($page_id);
+        if ($permalink) {
+            $login_url = $permalink;
+        }
+    }
 
-    wp_redirect(get_permalink($page_id_current_language));
+    wp_safe_redirect($login_url);
+    exit;
 }
 
 get_header();
@@ -59,6 +76,7 @@ $headers[] = "Accept: application/json";
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 curl_setopt($ch, CURLOPT_USERPWD,  $config->UserName . ":" . $config->Password);
 
+$applications = array();
 $response = json_decode(curl_exec($ch));
 $info = curl_getinfo($ch);
 
@@ -66,7 +84,7 @@ if ($info['http_code'] != 200) {
     /*print_r($info);
     echo "Return code is {$info} \n"
         . curl_error($ch);*/
-} else {
+} elseif (is_object($response) && isset($response->value) && is_array($response->value)) {
     $applications = $response->value;
     //echo  "<pre>" . print_r($applications, true) . "</pre>";
 }
@@ -77,8 +95,8 @@ curl_close($ch);
 
 // Remove empty applications as they don't include basic info!
 
-$applications = array_filter($applications, function ($application) use (&$applications) {
-    return $application->Incoming_Doc_No_;
+$applications = array_filter($applications, function ($application) {
+    return is_object($application) && !empty($application->Incoming_Doc_No_);
 });
 
 
@@ -95,7 +113,7 @@ if (!count($applications)) {
             line-height: 150px;
         }
     </style>
-<?
+<?php
     echo $message_for_non_members;
     get_footer();
 

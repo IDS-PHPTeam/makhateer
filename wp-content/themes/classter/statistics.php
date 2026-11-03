@@ -95,7 +95,11 @@ if ($language_code == "ar") {
 // Custom Post Type Statistics Start.
 
 $posts_args = array(
-	"post_type" => "statistic"
+	'post_type'      => 'statistic',
+	'posts_per_page' => -1,
+	'post_status'    => 'publish',
+	'orderby'        => 'date',
+	'order'          => 'DESC',
 );
 
 $posts = get_posts($posts_args);
@@ -109,9 +113,9 @@ if (count($posts)) {
 			<select id='titles_dropdown'>
 
 				<?php
-				foreach ($posts as $post) {
+				foreach ($posts as $statistic_post) {
 				?>
-					<option value='<?php echo $post->ID ?>'><?php echo $post->post_title ?></option>
+					<option value='<?php echo esc_attr($statistic_post->ID); ?>'><?php echo esc_html($statistic_post->post_title); ?></option>
 				<?php
 				}
 				?>
@@ -121,13 +125,22 @@ if (count($posts)) {
 
 
 		<?php
-		wp_enqueue_script('statistics_script', get_site_url() . '/wp-content/plugins/js/statistics.js');
+		wp_enqueue_script(
+			'statistics_script',
+			get_template_directory_uri() . '/js/statistics-dropdown.js',
+			array('jquery'),
+			'1.0.1',
+			true
+		);
 
 		$counters = get_theme_option("blog_counters");
 		$allow_editor = get_theme_option("allow_editor") == 'yes';
 		$page_style = get_custom_option('single_style');
 
-		the_post();
+		// Show the first dropdown statistic (not the page body / leftover loop post).
+		global $post;
+		$post = $posts[0];
+		setup_postdata($post);
 
 		if (get_theme_option('use_ajax_views_counter') == 'no') {
 			setPostViews(get_the_ID());
@@ -152,6 +165,7 @@ if (count($posts)) {
 
 	</div>
 <?php
+	wp_reset_postdata();
 }
 
 ?>
@@ -160,11 +174,16 @@ if (count($posts)) {
 
 	<?php
 	global $wpdb;
-	$query_polls="SELECT id FROM wp_ids_polls ORDER BY id DESC LIMIT 1";
-	$result_polls=$wpdb->get_results($query_polls);
-	$poll_id=$result_polls[0]->id;
-	do_shortcode("[ids_poll id=$poll_id]");
-
+	$query_polls = $wpdb->prepare(
+		"SELECT id FROM {$wpdb->prefix}ids_polls ORDER BY id DESC LIMIT %d",
+		1
+	);
+	$result_polls = $wpdb->get_results($query_polls);
+	if (!empty($result_polls[0]->id)) {
+		$poll_id = (int) $result_polls[0]->id;
+		$poll_lang = (get_locale() === 'ar') ? 'ar' : 'en';
+		echo do_shortcode('[ids_poll id="' . $poll_id . '" lang="' . $poll_lang . '"]');
+	}
 	?>
 </div>
 

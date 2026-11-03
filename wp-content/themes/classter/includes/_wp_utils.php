@@ -81,12 +81,15 @@ if (!function_exists('getParentCategory')) {
 		$val = null;
 		do {
 			$cat = get_term_by( 'id', $id, 'category', ARRAY_A);
+			if (!$cat || !is_array($cat)) {
+				break;
+			}
 			if ($cat['parent']==$parent_id) {
 				$val = $cat;
 				$val['link'] = get_term_link($val['slug'], $val['taxonomy']);
 				break;
 			}
-			$id = $cat['parent'];
+			$id = isset($cat['parent']) ? (int) $cat['parent'] : 0;
 		} while ($id);
 		return $val;
 	}
@@ -97,6 +100,9 @@ if (!function_exists('getParentCategoryByProperty')) {
 	function getParentCategoryByProperty($id, $prop, $values, $highest=true) {
 		if ((int) $id == 0) {
 			$cat = get_term_by( 'slug', $id, 'category', OBJECT);
+			if (!$cat || empty($cat->term_id)) {
+				return 0;
+			}
 			$id = $cat->term_id;
 		}
 		if (!is_array($values)) $values = array($values);
@@ -109,7 +115,10 @@ if (!function_exists('getParentCategoryByProperty')) {
 				}
 			}
 			$cat = get_term_by( 'id', $id, 'category', ARRAY_A);
-			$id = $cat['parent'];
+			if (!$cat || !is_array($cat)) {
+				break;
+			}
+			$id = isset($cat['parent']) ? (int) $cat['parent'] : 0;
 		} while ($id);
 		return $val;
 	}
@@ -669,6 +678,11 @@ if (!function_exists('getBlogTitle')) {
 // Show pages links below list or single page
 if (!function_exists('showPagination')) {
 	function showPagination($args=array()) {
+		// Arabic/RTL: reverse arrow glyphs only (links/order unchanged).
+		$is_rtl_lang = (function_exists('is_rtl') && is_rtl()) || (get_locale() === 'ar');
+		$prev_arrow  = $is_rtl_lang ? '&raquo;' : '&laquo;';
+		$next_arrow  = $is_rtl_lang ? '&laquo;' : '&raquo;';
+
 		$args = array_merge(array(
 			'offset' => 0,				// Offset to first showed record
 			'id' => 'pagination',		// 'id' attribute
@@ -682,8 +696,8 @@ if (!function_exists('showPagination')) {
 			'page_text' => "%PAGE_NUMBER%",
 			'first_text'=> __('&laquo; First', 'themerex'),
 			'last_text' => __("Last &raquo;", 'themerex'),
-			'prev_text' => __("&laquo;", 'themerex'),
-			'next_text' => __("&raquo;", 'themerex'),
+			'prev_text' => $prev_arrow,
+			'next_text' => $next_arrow,
 			'dot_text' => "&hellip;",
 			'before' => '',
 			'after' => '',
@@ -1330,6 +1344,8 @@ if (!function_exists('getPostData')) {
 		$post_date_sql = get_the_date('Y-m-d H:i:s');
 		$post_date_stamp = get_the_date('U');
 		$post_date = getDateOrDifference($post_date_sql);
+		$post_date_part1 = '';
+		$post_date_part2 = '';
 		if (!empty($opt['date_format'])) {
 			$parts = explode('+', $opt['date_format']);
 			$post_date_part1 = empty($parts[0]) ? '' : date($parts[0], $post_date_stamp);

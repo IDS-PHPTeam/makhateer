@@ -107,23 +107,38 @@ startWrapper(array(
 						<?php 
 					
 						echo '<ul class="pdf-lists">';
-						if(is_singular('bids')) {
-						foreach ($pdfs as $pdf) {
-							$title = get_the_title($pdf);
-							$pdf_icon = '<img src="'. site_url().'/wp-content/themes/classter/assets/images/icons/pdf.svg" class="w-auto mt-2" alt="calendar" style="height: 20px">';
-							
-							
-							echo '<li>' . $pdf_icon . '<a target="_blank" href="' . get_permalink($pdf) . '">' . $title . '</a> </li>';
-						}	
-					} else {
-						$title = get_the_title($single_pdf);
 						$pdf_icon = '<img src="'. site_url().'/wp-content/themes/classter/assets/images/icons/pdf.svg" class="w-auto mt-2" alt="calendar" style="height: 20px">';
-						
-						
-						echo '<li>' . $pdf_icon . '<a target="_blank" href="' . get_permalink($single_pdf) . '">' . $title . '</a> </li>';
-					
-
-					}					
+						if ( is_singular('bids') && is_array($pdfs) ) {
+							foreach ( $pdfs as $pdf ) {
+								$pdf_id  = is_array($pdf) ? (isset($pdf['ID']) ? (int) $pdf['ID'] : (isset($pdf['id']) ? (int) $pdf['id'] : 0)) : (int) $pdf;
+								if ( ! $pdf_id ) {
+									continue;
+								}
+								$pdf_url = wp_get_attachment_url( $pdf_id );
+								if ( ! $pdf_url ) {
+									continue;
+								}
+								$title = get_the_title( $pdf_id );
+								echo '<li>' . $pdf_icon . '<a target="_blank" rel="noopener" href="' . esc_url( $pdf_url ) . '">' . esc_html( $title ) . '</a> </li>';
+							}
+						} else {
+							$pdf_id = 0;
+							if ( is_array( $value ) && ! empty( $value['url'] ) ) {
+								$pdf_url = $value['url'];
+								$title   = ! empty( $value['title'] ) ? $value['title'] : ( ! empty( $value['filename'] ) ? $value['filename'] : __( 'Download PDF', 'themerex' ) );
+								$pdf_id  = ! empty( $value['ID'] ) ? (int) $value['ID'] : ( ! empty( $value['id'] ) ? (int) $value['id'] : 0 );
+							} else {
+								$pdf_id  = (int) $single_pdf;
+								$pdf_url = $pdf_id ? wp_get_attachment_url( $pdf_id ) : '';
+								$title   = $pdf_id ? get_the_title( $pdf_id ) : '';
+							}
+							if ( $pdf_url ) {
+								if ( $title === '' ) {
+									$title = basename( parse_url( $pdf_url, PHP_URL_PATH ) );
+								}
+								echo '<li>' . $pdf_icon . '<a target="_blank" rel="noopener" href="' . esc_url( $pdf_url ) . '">' . esc_html( $title ) . '</a> </li>';
+							}
+						}
 						echo '</ul>';
 						}
 						?>

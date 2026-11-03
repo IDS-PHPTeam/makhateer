@@ -507,7 +507,11 @@ if ((!$slider_show || $body_style != 'boxed') && $show_top_panel == 'over') $sho
 
 
 
-												<span><a href="https://mokhtar-fund.gov.lb/">AR</a>|<a href="https://mokhtar-fund.gov.lb/en/home">EN</a></span>
+												<?php
+												$lang_home_ar = function_exists('pll_home_url') ? pll_home_url('ar') : home_url('/');
+												$lang_home_en = function_exists('pll_home_url') ? pll_home_url('en') : home_url('/en/home/');
+												?>
+												<span><a href="<?php echo esc_url($lang_home_ar); ?>">AR</a>|<a href="<?php echo esc_url($lang_home_en); ?>">EN</a></span>
 
 											</div>
 

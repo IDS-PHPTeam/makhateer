@@ -1,0 +1,183 @@
+/**
+ * Search results cards: equal-height grid, full titles, proper images,
+ * consistent text/button alignment, pagination below the grid.
+ */
+
+body.search .masonryWrap {
+	display: block !important;
+	overflow: visible !important;
+	height: auto !important;
+	clear: both !important;
+}
+
+body.search section.masonry.searchCards {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	grid-auto-rows: auto !important;
+	align-items: stretch !important;
+	gap: 20px !important;
+	width: 100% !important;
+	height: auto !important;
+	margin: 0 0 20px !important;
+	padding: 0 !important;
+	float: none !important;
+	position: relative !important;
+	overflow: visible !important;
+}
+
+html:lang(ar) body.search section.masonry.searchCards article.isotopeElement,
+html:lang(en) body.search section.masonry.searchCards article.isotopeElement,
+body.search section.masonry.searchCards .isotopeElement,
+body.search section.masonry.searchCards article.isotopeElement {
+	float: none !important;
+	position: relative !important;
+	left: auto !important;
+	top: auto !important;
+	right: auto !important;
+	transform: none !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 0 !important;
+	min-height: 0 !important;
+	height: 100% !important;
+	display: flex !important;
+	flex-direction: column !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	overflow: hidden !important;
+	align-self: stretch !important;
+}
+
+body.search section.masonry.searchCards .isotopePadding,
+body.search section.masonry.searchCards .isotopePadding.bg_post {
+	display: flex !important;
+	flex-direction: column !important;
+	flex: 1 1 auto !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 100% !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+	box-sizing: border-box !important;
+	background-color: #f4f4f4 !important;
+}
+
+/* Hide all card images on search so every card is text-only and equal height */
+body.search section.masonry.searchCards .isotopePadding.bg_post > .thumb,
+body.search section.masonry.searchCards .isotopePadding.bg_post > .post_thumb,
+body.search section.masonry.searchCards .thumb,
+body.search section.masonry.searchCards .post_thumb {
+	display: none !important;
+	content: none !important;
+	height: 0 !important;
+	max-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+}
+
+body.search section.masonry.searchCards .isotopePadding.bg_post::before {
+	content: none !important;
+	display: none !important;
+}
+
+/* Override Additional CSS fixed 130px text box */
+body.search .masonry .isotopePadding.bg_post .post_wrap,
+body.search section.masonry.searchCards .isotopePadding.bg_post .post_wrap,
+body.search section.masonry.searchCards .post_wrap {
+	display: flex !important;
+	flex-direction: column !important;
+	flex: 1 1 auto !important;
+	height: auto !important;
+	min-height: 0 !important;
+	max-height: none !important;
+	overflow: visible !important;
+	box-sizing: border-box !important;
+}
+
+body.search section.masonry.searchCards .post_wrap h4 {
+	flex: 0 0 auto !important;
+	max-height: none !important;
+	overflow: visible !important;
+	margin: 0 0 8px !important;
+	line-height: 1.35 !important;
+}
+
+body.search section.masonry.searchCards .post_wrap date,
+body.search section.masonry.searchCards .post_wrap .datePost,
+body.search section.masonry.searchCards .post_wrap .post_date {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	color: #000 !important;
+	font-size: 14px !important;
+	line-height: 1.3 !important;
+	margin: 0 0 8px !important;
+	flex: 0 0 auto !important;
+}
+
+body.search section.masonry.searchCards .post_wrap .post_format_wrap {
+	flex: 1 1 auto !important;
+	min-height: 0 !important;
+	max-height: none !important;
+	overflow: visible !important;
+	margin: 0 0 12px !important;
+}
+
+body.search section.masonry.searchCards .post_wrap .post_status {
+	flex: 0 0 auto !important;
+}
+
+/* Read More sits at the bottom of equal-height cards */
+body.search section.masonry.searchCards .post_wrap .post_file,
+body.search section.masonry.searchCards .post_wrap .squareButton,
+body.search section.masonry.searchCards .post_wrap .moreWrapMasonry,
+body.search section.masonry.searchCards .post_wrap .masonryMore {
+	flex: 0 0 auto !important;
+	margin-top: auto !important;
+	align-self: stretch !important;
+}
+
+body.search .paginationClear {
+	display: block !important;
+	clear: both !important;
+	width: 100% !important;
+	height: 0 !important;
+}
+
+body.search #pagination,
+body.search .pagination {
+	clear: both !important;
+	display: block !important;
+	float: none !important;
+	position: relative !important;
+	width: 100% !important;
+	margin: 40px 0 !important;
+	z-index: 2 !important;
+}
+
+/*
+ * Pagination arrows are fontello icons via :before (HTML «/» is text-indent hidden).
+ * LTR: prev=\e803 (left), next=\e804 (right). Swap for Arabic RTL only.
+ */
+html:lang(ar) body.search .pagination > ul > li.pager_prev > a:before,
+html:lang(ar) #pagination > ul > li.pager_prev > a:before {
+	content: '\e804' !important;
+}
+
+html:lang(ar) body.search .pagination > ul > li.pager_next > a:before,
+html:lang(ar) #pagination > ul > li.pager_next > a:before {
+	content: '\e803' !important;
+}
+
+@media (max-width: 1023px) {
+	body.search section.masonry.searchCards {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+@media (max-width: 767px) {
+	body.search section.masonry.searchCards {
+		grid-template-columns: 1fr !important;
+	}
+}

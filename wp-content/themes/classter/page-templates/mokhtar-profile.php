@@ -2,16 +2,33 @@
 
 $mokhtar = wp_get_current_user();
 
-if (empty($mokhtar->ID) || !ids_is_mokhtar()) {
-    session_start();
+if (empty($mokhtar->ID) || !function_exists('ids_is_mokhtar') || !ids_is_mokhtar()) {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
 
-    $redirect_to = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-    $_SESSION['redirect_to'] = $redirect_to;
+    $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+    $uri  = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+    $_SESSION['redirect_to'] = (is_ssl() ? 'https://' : 'http://') . $host . $uri;
 
-    $page = get_page_by_path("login");
-    $page_id_current_language = pll_get_post($page->ID, get_locale());
+    $login_url = home_url('/');
+    $page      = get_page_by_path('login');
+    if ($page) {
+        $page_id = $page->ID;
+        if (function_exists('pll_get_post')) {
+            $translated = pll_get_post($page->ID, get_locale());
+            if ($translated) {
+                $page_id = $translated;
+            }
+        }
+        $permalink = get_permalink($page_id);
+        if ($permalink) {
+            $login_url = $permalink;
+        }
+    }
 
-    wp_redirect(get_permalink($page_id_current_language));
+    wp_safe_redirect($login_url);
+    exit;
 }
 
 $template_path = get_template_directory_uri();
@@ -43,17 +60,12 @@ wp_enqueue_script("ids-mokhtar-profile-sweetalert-js", "$page_templates_dir/asse
 wp_enqueue_script("ids-mokhtar-profile-profile-js", "$page_templates_dir/Utilities/MokhtarProfile.js", array("jquery"), null,  true);
 wp_enqueue_script("ids-mokhtar-profile-bs-dt-js", "$page_templates_dir/assets/Plugins/datatables/bs-datatable.js", array("jquery"), null,  true);
 
-$active_election = get_user_meta($mokhtar->ID, "ActiveElection", true);
-
+$active_election = (string) get_user_meta($mokhtar->ID, "ActiveElection", true);
 $active_election_years = array_map("intval", explode("-", $active_election));
-
-$is_current_mokhtar = false;
-
-if (max($active_election_years) >= date("Y")) {
-    $is_current_mokhtar = true;
-}
+$is_current_mokhtar = !empty($active_election_years) && max($active_election_years) >= (int) date("Y");
 
 $language = get_locale() == "ar" ? "ar" : "en";
+$name_column = ($language === "ar") ? "name_ar" : "name_en";
 
 $labels = array();
 
@@ -89,12 +101,28 @@ if ($language == "ar") {
 
 global $wpdb;
 
-$query = "SELECT name_$language FROM " . $wpdb->prefix . "ids_mohafazat WHERE id=" . get_user_meta($mokhtar->ID, "MohafazaID", true);
-$mohafaza_name = $wpdb->get_results($query, ARRAY_N)[0][0];
+$mohafaza_id   = absint(get_user_meta($mokhtar->ID, "MohafazaID", true));
+$kaza_id       = absint(get_user_meta($mokhtar->ID, "KazaID", true));
+$mohafaza_name = "";
+$kaza_name     = "";
 
+if ($mohafaza_id) {
+    $mohafaza_name = (string) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT {$name_column} FROM {$wpdb->prefix}ids_mohafazat WHERE id = %d",
+            $mohafaza_id
+        )
+    );
+}
 
-$query = "SELECT name_$language FROM " . $wpdb->prefix . "ids_kazat WHERE id=" . get_user_meta($mokhtar->ID, "KazaID", true);
-$kaza_name = $wpdb->get_results($query, ARRAY_N)[0][0];
+if ($kaza_id) {
+    $kaza_name = (string) $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT {$name_column} FROM {$wpdb->prefix}ids_kazat WHERE id = %d",
+            $kaza_id
+        )
+    );
+}
 
 
 get_header();

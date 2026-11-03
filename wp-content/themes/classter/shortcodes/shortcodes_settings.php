@@ -4042,10 +4042,12 @@ function sc_selector_add_in_toolbar(){
 
 
 function sc_param_is_on($prm) {
-	return $prm>0 || in_array(themerex_strtolower($prm), array('true', 'on', 'yes', 'show'));
+	// PHP 8+ compares non-numeric strings to numbers as strings ("no" > 0 is true).
+	// Only treat numeric values as on via the >0 check.
+	return (is_numeric($prm) && $prm > 0) || in_array(themerex_strtolower($prm), array('true', 'on', 'yes', 'show'), true);
 }
 function sc_param_is_off($prm) {
-	return empty($prm) || $prm===0 || in_array(themerex_strtolower($prm), array('false', 'off', 'no', 'none', 'hide'));
+	return empty($prm) || $prm===0 || $prm==='0' || in_array(themerex_strtolower($prm), array('false', 'off', 'no', 'none', 'hide'), true);
 }
 function sc_param_is_inherit($prm) {
 	return in_array(themerex_strtolower($prm), array('inherit', 'default'));
