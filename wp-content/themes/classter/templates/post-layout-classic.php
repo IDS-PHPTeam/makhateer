@@ -1,7 +1,9 @@
 <?php
 $show_title = !in_array($post_data['post_format'], array('aside', 'chat', 'status', 'link', 'quote'));
 $columns = max(1, min(4, (int) themerex_substr($opt['style'], -1)));
-if (isset($_GET['post_type']) && $_GET['post_type'] == 'mokhtar') {
+// PHP 8+: avoid Undefined array key "post_type" on normal/Arabic search (?s=...) without post_type.
+$request_post_type = isset($_GET['post_type']) ? sanitize_key(wp_unslash($_GET['post_type'])) : '';
+if ($request_post_type === 'mokhtar') {
 ?>
 
 	<style>
@@ -101,7 +103,7 @@ if (isset($_GET['post_type']) && $_GET['post_type'] == 'mokhtar') {
 	</style>
 <?php
 }
-if (isset($_GET['post_type']) && $_GET['post_type'] == 'bids') {
+if ($request_post_type === 'bids') {
 ?>
 
 	<style>
@@ -129,7 +131,7 @@ line-height:25px;
 <?php
 }
 ?>
-<article class="isotopeElement <?php echo $_GET["post_type"] == "mokhtar" ? "ids-phone" : "ids-custom-post-type"; ?> <?php
+<article class="isotopeElement <?php echo $request_post_type === 'mokhtar' ? 'ids-phone' : 'ids-custom-post-type'; ?> <?php
 																														echo 'post_format_' . esc_attr($post_data['post_format'])
 																															. ($opt['number'] % 2 == 0 ? ' even' : ' odd')
 																															. ($opt['number'] == 0 ? ' first' : '')
@@ -142,7 +144,7 @@ line-height:25px;
 	<div class="isotopePadding bg_post">
 		<?php
 
-		if (isset($_GET["post_type"]) && $_GET["post_type"] == "mokhtar") {
+		if ($request_post_type === 'mokhtar') {
 		?>
 			<div class="ids-phone-wrap-post_wrap">
 			<?php
@@ -179,13 +181,13 @@ line-height:25px;
 					} else { ?>
 							<div class="post_wrap">
 							<?php }
-						if (isset($_GET["post_type"]) && $_GET["post_type"] == "mokhtar") {
+						if ($request_post_type === 'mokhtar') {
 							?>
 								<?php
 							}
 							if ($show_title) {
 								if (!isset($opt['links']) || $opt['links']) {
-									if (isset($_GET["post_type"]) && ( $_GET["post_type"] == "laws" ||  $_GET["post_type"] == "decrees" ||  $_GET["post_type"] == "diary" ||  $_GET["post_type"] == "decisions")) {
+									if (in_array($request_post_type, array('laws', 'decrees', 'diary', 'decisions'), true)) {
 							$lang = get_locale();
 						  if ($lang != 'en_US') {
 								?>
@@ -199,7 +201,7 @@ line-height:25px;
 						  }?>
 								
 										<h4><a href="<?php echo esc_url($post_data['post_link']); ?>"><?php echo esc_html($post_data['post_title']); ?></a></h4><?php
-																																							} else if (isset($_GET["post_type"]) && $_GET["post_type"] == "mokhtar" && get_field("photo")) {
+																																							} else if ($request_post_type === 'mokhtar' && get_field("photo")) {
 
 																																								?>
 
@@ -223,7 +225,7 @@ line-height:25px;
 																																								?><h4><?php echo esc_html($post_data['post_title']); ?></h4><?php
 																																																						}
 																																																					}
-																																																					if ($_GET["post_type"] != "mokhtar") {
+																																																					if ($request_post_type !== 'mokhtar') {
 																																																						$lang = get_locale();
 																																																						if ($lang == 'en_US') {
 																																																							?>
@@ -241,14 +243,14 @@ line-height:25px;
 									</date>
 								<?php }
 																																																					}
-																																																					if ($post_data['post_excerpt'] && $_GET["post_type"]!="bids") {
+																																																					if ($post_data['post_excerpt'] && $request_post_type !== 'bids') {
 								?>
 								<div class="post_format_wrap post<?php echo esc_attr(themerex_strtoproper($post_data['post_format'])); ?>">
 									<?php echo in_array($post_data['post_format'], array('quote', 'link', 'chat')) ? balanceTags($post_data['post_excerpt']) : getShortString($post_data['post_excerpt'], isset($opt['descr']) ? $opt['descr'] : get_custom_option('post_excerpt_maxlength' . ($columns > 1 ? '_masonry' : ''))); ?>
 								</div>
 								<?php
 																																																					}
-																																																					if($post_data['post_excerpt'] && $_GET["post_type"]=="bids"){
+																																																					if ($post_data['post_excerpt'] && $request_post_type === 'bids') {
 																																																					    ?>
 								<div class="post_format_wrap post<?php echo esc_attr(themerex_strtoproper($post_data['post_format'])); ?>">
 																																																					       <?php  echo wp_trim_words( $post_data['post_excerpt'], 14, "..."); ?>
@@ -331,7 +333,7 @@ line-height:25px;
 							} ?>
 
 							<?php
-							if (isset($_GET["post_type"]) && $_GET["post_type"] == "mokhtar") {
+							if ($request_post_type === 'mokhtar') {
 							?>
 							</div>
 

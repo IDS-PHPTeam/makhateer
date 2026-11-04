@@ -3,8 +3,11 @@
 	themerex_enqueue_script('form-login', themerex_get_file_url('/js/_form_login.js'), array(), null, true);
 
 	$lost_password_page = get_page_by_path("lost-password");
-	$lost_password_page_id_current_language = pll_get_post($lost_password_page->ID, get_locale());
-	$lost_password_page_link = get_permalink($lost_password_page_id_current_language);
+	$lost_password_page_link = '';
+	if ($lost_password_page instanceof WP_Post) {
+		$lost_password_page_id_current_language = pll_get_post($lost_password_page->ID, get_locale());
+		$lost_password_page_link = get_permalink($lost_password_page_id_current_language ? $lost_password_page_id_current_language : $lost_password_page->ID);
+	}
 
 ?>
 	<div id="user-popUp" class="user-popUp mfp-with-anim mfp-hide">

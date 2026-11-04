@@ -1,0 +1,167 @@
+/**
+ * CPT archives (decrees, laws, …): 3 cards per row, taller cards
+ * so absolute Read More does not sit on the excerpt.
+ * Overrides Additional CSS height:130px on .post_wrap.
+ */
+
+body.ids-cpt-cards .masonryWrap {
+	display: block !important;
+	overflow: visible !important;
+	height: auto !important;
+	min-height: 0 !important;
+	margin-bottom: 0 !important;
+	clear: both !important;
+}
+
+body.ids-cpt-cards section.masonry.cptCards {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	grid-auto-rows: auto !important;
+	align-items: stretch !important;
+	gap: 14px !important;
+	width: 100% !important;
+	height: auto !important;
+	min-height: 0 !important;
+	margin: 0 0 20px !important;
+	padding: 0 !important;
+	float: none !important;
+	position: relative !important;
+	overflow: visible !important;
+}
+
+/* Theme clearfix ::after becomes an empty grid row — kills gap above pagination */
+body.ids-cpt-cards section.masonry.cptCards::before,
+body.ids-cpt-cards section.masonry.cptCards::after {
+	content: none !important;
+	display: none !important;
+	clear: none !important;
+	height: 0 !important;
+	width: 0 !important;
+}
+
+body.ids-cpt-cards #pagination,
+body.ids-cpt-cards .pagination {
+	clear: both !important;
+	margin-top: 10px !important;
+}
+
+@media (max-width: 767px) {
+	body.ids-cpt-cards section.masonry.cptCards {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+@media (max-width: 479px) {
+	body.ids-cpt-cards section.masonry.cptCards {
+		grid-template-columns: 1fr !important;
+	}
+}
+
+body.ids-cpt-cards section.masonry.cptCards article.isotopeElement,
+body.ids-cpt-cards section.masonry.cptCards .isotopeElement {
+	float: none !important;
+	position: relative !important;
+	left: auto !important;
+	top: auto !important;
+	right: auto !important;
+	transform: none !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 0 !important;
+	min-height: 0 !important;
+	height: 100% !important;
+	display: flex !important;
+	flex-direction: column !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	overflow: visible !important;
+	align-self: stretch !important;
+}
+
+body.ids-cpt-cards section.masonry.cptCards .isotopePadding,
+body.ids-cpt-cards section.masonry.cptCards .isotopePadding.bg_post {
+	display: flex !important;
+	flex-direction: column !important;
+	flex: 1 1 auto !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 260px !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+	box-sizing: border-box !important;
+	position: relative !important;
+}
+
+/* Was 130px — taller so title + excerpt + Read More fit */
+body.ids-cpt-cards .masonry .isotopePadding.bg_post .post_wrap,
+body.ids-cpt-cards section.masonry.cptCards .isotopePadding.bg_post .post_wrap,
+body.ids-cpt-cards section.masonry.cptCards .post_wrap {
+	display: block !important;
+	height: 230px !important;
+	min-height: 230px !important;
+	max-height: none !important;
+	padding-bottom: 48px !important;
+	overflow: hidden !important;
+	box-sizing: border-box !important;
+	position: relative !important;
+}
+
+body.ids-cpt-cards section.masonry.cptCards .post_wrap h4 {
+	display: -webkit-box !important;
+	-webkit-box-orient: vertical !important;
+	-webkit-line-clamp: 2 !important;
+	max-height: 2.6em !important;
+	overflow: hidden !important;
+	margin-bottom: 6px !important;
+}
+
+body.ids-cpt-cards section.masonry.cptCards .post_format_wrap {
+	display: -webkit-box !important;
+	-webkit-box-orient: vertical !important;
+	-webkit-line-clamp: 3 !important;
+	max-height: 4.6em !important;
+	overflow: hidden !important;
+	margin-bottom: 0 !important;
+}
+
+/* Keep absolute, reserved by padding-bottom above */
+body.ids-cpt-cards .masonry span.post_file,
+body.ids-cpt-cards .masonry .post_file,
+body.ids-cpt-cards section.masonry.cptCards .post_file {
+	position: absolute !important;
+	bottom: 12px !important;
+	top: auto !important;
+	z-index: 2 !important;
+	margin: 0 !important;
+	width: auto !important;
+}
+
+html:lang(ar) body.ids-cpt-cards .masonry span.post_file,
+html:lang(ar) body.ids-cpt-cards .masonry .post_file {
+	left: 20px !important;
+	right: auto !important;
+	text-align: left !important;
+	float: none !important;
+}
+
+html:lang(en) body.ids-cpt-cards .masonry span.post_file,
+html:lang(en) body.ids-cpt-cards .masonry .post_file {
+	right: 20px !important;
+	left: auto !important;
+	text-align: right !important;
+	float: none !important;
+}
+
+/**
+ * Pagination arrows are fontello icons via :before (HTML «/» is text-indent hidden).
+ * LTR: prev=\e803 (left), next=\e804 (right). Swap for Arabic RTL only.
+ */
+html:lang(ar) body.ids-cpt-cards .pagination > ul > li.pager_prev > a:before,
+html:lang(ar) body.ids-cpt-cards #pagination > ul > li.pager_prev > a:before {
+	content: '\e804' !important;
+}
+
+html:lang(ar) body.ids-cpt-cards .pagination > ul > li.pager_next > a:before,
+html:lang(ar) body.ids-cpt-cards #pagination > ul > li.pager_next > a:before {
+	content: '\e803' !important;
+}

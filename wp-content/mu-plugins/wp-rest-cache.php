@@ -21,11 +21,20 @@
  * Make sure plugin functions are loaded.
  */
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
-if ( is_plugin_active( 'wp-rest-cache/wp-rest-cache.php' ) ) {
-	include_once WP_PLUGIN_DIR . '/wp-rest-cache/wp-rest-cache.php';
-} elseif ( file_exists( WPMU_PLUGIN_DIR . '/wp-rest-cache/wp-rest-cache.php' ) ) {
-	include_once WPMU_PLUGIN_DIR . '/wp-rest-cache/wp-rest-cache.php';
+
+$wp_rest_cache_main = WP_PLUGIN_DIR . '/wp-rest-cache/wp-rest-cache.php';
+$wp_rest_cache_mu   = WPMU_PLUGIN_DIR . '/wp-rest-cache/wp-rest-cache.php';
+
+if ( is_plugin_active( 'wp-rest-cache/wp-rest-cache.php' ) && file_exists( $wp_rest_cache_main ) ) {
+	include_once $wp_rest_cache_main;
+} elseif ( file_exists( $wp_rest_cache_mu ) ) {
+	include_once $wp_rest_cache_mu;
 } else {
+	// Plugin marked active in DB but files are missing locally — skip without fatal.
+	return;
+}
+
+if ( ! class_exists( '\WP_Rest_Cache_Plugin\Includes\API\Endpoint_Api' ) ) {
 	return;
 }
 

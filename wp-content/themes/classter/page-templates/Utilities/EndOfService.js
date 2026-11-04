@@ -101,15 +101,35 @@ jQuery(function($) {
 
         $("#ids-loader").css({ "display": "inline-block" });
 
-        $.post($IntegrationAPIUrl + "/eos", body, function(response) {
+        $.ajax({
+            url: $IntegrationAPIUrl + "/eos",
+            type: "POST",
+            data: body,
+            dataType: "json"
+        }).done(function(response) {
             console.log(response);
-
             $("#ids-loader").css({ "display": "none" });
 
-            AlertSwal(response["message"]);
+            var msg = (response && response.message) ? response.message : null;
+            if (!msg) {
+                msg = ($language_code != "ar")
+                    ? "Calculation completed, but no result was returned."
+                    : "تم الاحتساب لكن لم يتم إرجاع نتيجة.";
+            }
+            AlertSwal(msg);
+        }).fail(function(xhr) {
+            console.log(xhr);
+            $("#ids-loader").css({ "display": "none" });
 
-        }).fail(function(error) {
-            console.log(error);
+            var msg = ($language_code != "ar")
+                ? "Unable to calculate. Please try again."
+                : "تعذر الاحتساب. الرجاء المحاولة مجدداً.";
+
+            if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                msg = xhr.responseJSON.message;
+            }
+
+            AlertSwal(msg);
         });
 
     }

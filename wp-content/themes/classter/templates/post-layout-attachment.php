@@ -7,14 +7,27 @@ $post_data['post_views']++;
 		<img alt="" src="<?php echo esc_url($post_data['post_attachment']); ?>">
 		<?php
 		$post = get_post();
-		$attachments = array_values( get_children( array( 'post_parent' => $post->post_parent, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => 'ASC', 'orderby' => 'menu_order ID' ) ) );
-		foreach ( $attachments as $k => $attachment ) {
-			if ( $attachment->ID == $post->ID )
-				break;
+		$k = null;
+		$attachments = array();
+		if ( $post && ! empty( $post->post_parent ) ) {
+			$attachments = array_values( get_children( array(
+				'post_parent'    => $post->post_parent,
+				'post_status'    => 'inherit',
+				'post_type'      => 'attachment',
+				'post_mime_type' => 'image',
+				'order'          => 'ASC',
+				'orderby'        => 'menu_order ID',
+			) ) );
+			foreach ( $attachments as $index => $attachment ) {
+				if ( (int) $attachment->ID === (int) $post->ID ) {
+					$k = $index;
+					break;
+				}
+			}
 		}
-		if ( isset( $attachments[ $k-1 ] ) ) {
-			$link = get_permalink( $attachments[ $k-1 ]->ID ).'#topOfPage';
-			$desc = getShortString(!empty($attachments[ $k-1 ]->post_excerpt) ? $attachments[ $k-1 ]->post_excerpt : $attachments[ $k-1 ]->post_title, 30);
+		if ( $k !== null && isset( $attachments[ $k - 1 ] ) ) {
+			$link = get_permalink( $attachments[ $k - 1 ]->ID ).'#topOfPage';
+			$desc = getShortString(!empty($attachments[ $k - 1 ]->post_excerpt) ? $attachments[ $k - 1 ]->post_excerpt : $attachments[ $k - 1 ]->post_title, 30);
 			?>
 			<a class="itemPrev" href="<?php echo esc_url($link); ?>">
 				<span class="itInf">
@@ -24,9 +37,9 @@ $post_data['post_views']++;
 			</a>
 			<?php
 		}
-		if ( isset( $attachments[ $k+1 ] ) ) {
-			$link = get_permalink( $attachments[ $k+1 ]->ID ).'#topOfPage';
-			$desc = getShortString(!empty($attachments[ $k+1 ]->post_excerpt) ? $attachments[ $k+1 ]->post_excerpt : $attachments[ $k+1 ]->post_title, 30);
+		if ( $k !== null && isset( $attachments[ $k + 1 ] ) ) {
+			$link = get_permalink( $attachments[ $k + 1 ]->ID ).'#topOfPage';
+			$desc = getShortString(!empty($attachments[ $k + 1 ]->post_excerpt) ? $attachments[ $k + 1 ]->post_excerpt : $attachments[ $k + 1 ]->post_title, 30);
 			?>
 			<a class="itemNext" href="<?php echo esc_url($link); ?>">
 				<span class="itInf">
